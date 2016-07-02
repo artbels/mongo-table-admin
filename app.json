@@ -1,0 +1,7 @@
+{
+  "name": "mongo-table-admin",
+  "description": "Work with mongo collection as a table. Inline edit or pivot. Filter documents with json query.",
+  "repository": "https://github.com/artbels/mongo-table-admin",
+  "keywords": ["mongo", "table", "pivot", "admin"],
+  "image": "heroku/nodejs"
+}
