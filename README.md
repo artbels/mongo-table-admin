@@ -4,4 +4,4 @@ Admin interface for mongo, to work with documents as table rows. Integrates Hand
 
 ### installation
 npm install
-npm start
+ npm start
