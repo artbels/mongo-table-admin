@@ -8,3 +8,6 @@ npm install
 npm start
 
 localhost:12369
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
