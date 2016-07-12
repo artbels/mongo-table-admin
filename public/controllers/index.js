@@ -174,15 +174,15 @@ var servProps = ["_id", "updatedAt", "_updated_at", "createdAt", "_created_at"];
           var oldValue = change[2];
           var newValue = change[3];
           var changed = (oldValue != newValue);
-          var docId = arr[rowNum]["_id"];
+          var docId = arr[rowNum]._id;
 
           if (changed) {
             console.log(docId, field, newValue);
-            params.query = JSON.stringify({"_id": docId});
+            params.id = docId;
             var update = {};
             update[field] = newValue;
             params.update = JSON.stringify({"$set": update}); 
-            $.post("/update", params, function(obj) {
+            $.post("/updatebyid", params, function(obj) {
               console.log(obj); 
               cb();
             });          

@@ -3,6 +3,7 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID;
 var MH = require('./mongo.helpers');
 
 
@@ -57,11 +58,31 @@ app.post('/update', function(req, res) {
   var collection = req.body.collection;
   var query = req.body.query ? JSON.parse(req.body.query) : {};
   var update = req.body.update ? JSON.parse(req.body.update) : {};
-
+console.log(query);
+console.log(update);
   MongoClient.connect(databaseUri, function(e, db) {
     if (e) return res.json(e);
 
     db.collection(collection).updateOne(query, update, function(e, r) {
+      if (e) return res.json(e);
+
+      res.json(r);
+      db.close();
+    });
+  });
+});
+
+
+app.post('/updatebyid', function(req, res) {
+  var databaseUri = req.body.db;
+  var collection = req.body.collection;
+  var objId = new ObjectID(req.body.id);
+  var update = req.body.update ? JSON.parse(req.body.update) : {};
+
+  MongoClient.connect(databaseUri, function(e, db) {
+    if (e) return res.json(e);
+
+    db.collection(collection).updateOne({_id: objId}, update, function(e, r) {
       if (e) return res.json(e);
 
       res.json(r);
