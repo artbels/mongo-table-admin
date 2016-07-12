@@ -3,6 +3,7 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
+var MH = require('./mongo.helpers');
 
 
 var app = express();
@@ -22,6 +23,10 @@ app.get('/', function(req, res) {
   res.render("index");
 });
 
+app.get('/create/', function(req, res) {
+  res.render("create");
+});
+
 app.post('/find', function(req, res) {
   var databaseUri = req.body.db;
   var collection = req.body.collection;
@@ -36,6 +41,14 @@ app.post('/find', function(req, res) {
       res.json(docs);
       db.close();
     });
+  });
+});
+
+app.post('/listcollections', function(req, res) {
+  MH.listcollections(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
   });
 });
 
@@ -55,6 +68,31 @@ app.post('/update', function(req, res) {
       db.close();
     });
   });
+});
+
+
+app.post('/insert', function(req, res) {
+  var databaseUri = req.body.db;
+  var collection = req.body.collection;
+  if (!req.body.data) return res.json("no data");
+
+  try {
+    var dataArr = JSON.parse(req.body.data);
+
+    MongoClient.connect(databaseUri, function(e, db) {
+      if (e) return res.json(e);
+
+      db.collection(collection).insert(dataArr, function(e, r) {
+        if (e) return res.json(e);
+
+        res.json(r);
+        db.close();
+      });
+    });
+
+  } catch (e) {
+    res.json(e);
+  }
 });
 
 

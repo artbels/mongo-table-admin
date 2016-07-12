@@ -106,6 +106,7 @@
     input.id = params.id;
     input.type = "text";
     input.placeholder = params.placeholder || "";
+    input.name = params.name || params.id;
     input.className = (params.class !== undefined) ? params.class : ((params.className !== undefined) ? params.className : "form-control input-lg");
     if(params.style) {
       for (var key in params.style) {
@@ -126,6 +127,114 @@
     }
 
     params.parent.appendChild(input);
+  };
+
+
+  UI.download = function(str, params) {
+
+    params.id = params.id || params.name || "download-link";
+    params.name = params.name || "renameMe.json";
+    params.type = params.type || "application/json";
+
+    if (typeof params.parent == "string") params.parent = document.querySelector(params.parent);
+    else params.parent = params.parent || document.body;
+
+    var exNode = document.getElementById(params.id);
+    if (exNode) params.parent.removeChild(exNode);
+
+    var a = document.createElement('a');
+
+    if (params.noBlob) {
+      var data = params.type + encodeURIComponent(str);
+      a.href = 'data:' + data;
+    } else {
+      var blobObj = new Blob([str], {
+        type: params.type
+      });
+      var blobUrl = URL.createObjectURL(blobObj);
+      a.href = blobUrl;
+    }
+
+    a.download = params.name;
+    a.textContent = params.name;
+    a.id = params.id;
+    if(params.style) {
+      for (var key in params.style) {
+        var val = params.style[key];
+        a.style[key] = val;
+      }
+    }
+    params.parent.appendChild(a);
+  };
+
+
+  UI.fileReader = function(cb, params) {
+
+    params = params || {};
+
+    if((typeof params == "function") && (typeof cb == "object")) {
+      var temp = params;
+      params = cb;
+      cb = temp;
+    }
+
+    cb = cb || function(d) {
+      console.log(d);
+    };
+
+    params.id = params.id || "fileReader";
+    if (typeof params.parent == "string") params.parent = document.querySelector(params.parent);
+    else params.parent = params.parent || document.body;
+
+    var exNode = document.getElementById(params.id);
+    if (exNode) params.parent.removeChild(exNode);
+
+    var fileInput = document.createElement("input");
+    params.parent.appendChild(fileInput);
+    fileInput.type = "file";
+    fileInput.id = params.id;
+    fileInput.onchange = function(evt) {
+      var fileToRead = evt.target.files[0];
+      var fileType = fileToRead.name.split(/\./).pop();
+      if (parent.bypassFileReader) return cb(fileToRead);
+      var fileReader = new FileReader();
+      fileReader.onload = function(e) {
+        var contents = e.target.result;
+        if ((["{", "["].indexOf(contents.slice(0, 1)) != -1) && params.json) contents = JSON.parse(contents);
+        cb(contents, fileToRead);
+      };
+
+      if ((["zip", "kmz"].indexOf(fileType) != -1) || (params.readAsArrayBuffer)) {
+        fileReader.readAsArrayBuffer(fileToRead);
+      } else if ((["xls", "xlsx"].indexOf(fileType) != -1) || (params.readAsBinaryString)) {
+        fileReader.readAsBinaryString(fileToRead);
+      } else {
+        fileReader.readAsText(fileToRead, params.encoding);
+      }
+    };
+  };
+
+   UI.checkbox = function(params) {
+
+    params = params || {};
+
+    if (typeof params == "string") params = {
+      text: params,
+      id: params
+    };
+
+    if (typeof params.parent == "string") params.parent = document.querySelector(params.parent);
+    else params.parent = params.parent || document.body;
+
+    params.id = params.id || "checkbox";
+
+    var checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = params.id;
+    checkbox.checked = Boolean(params.checked);
+    params.parent.appendChild(checkbox);
+
+    params.parent.appendChild(document.createTextNode(params.text));
   };
 
 
