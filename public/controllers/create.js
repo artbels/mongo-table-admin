@@ -57,7 +57,7 @@ UI.button({
   var colHeaders = HOT.getColHeader();
   var arr = convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders);
   saveDataMongo(arr);
-  
+
 });
 
 // UI.button({
@@ -77,55 +77,59 @@ UI.button({
 
 
 function saveDataMongo(arr) {
-    swal({
-      // title: "Mongo URL",
-      html: "Please enter mongo url<div id='swal-div'> </div>",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      onOpen: function() {
-        var swalDiv = document.querySelector("#swal-div");
+  swal({
+    // title: "Mongo URL",
+    html: "Please enter mongo url<div id='swal-div'> </div>",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    onOpen: function() {
+      var swalDiv = document.querySelector("#swal-div");
 
-        UI.input({
-          parent: swalDiv,
-          id: "db-path",
-          placeholder: 'mongodb://localhost:27017/test',
-          style: {
-            fontSize: '100%',
-            textAlign: "center"
-          }
-        });
+      UI.input({
+        parent: swalDiv,
+        id: "db-path",
+        placeholder: 'mongodb://localhost:27017/test',
+        style: {
+          fontSize: '100%',
+          textAlign: "center"
+        }
+      });
 
 
-        UI.input({
-          parent: swalDiv,
-          id: "collection",
-          placeholder: 'collection',
-          style: {
-            fontSize: '100%',
-            textAlign: "center"
-          }
-        });
+      UI.input({
+        parent: swalDiv,
+        id: "collection",
+        placeholder: 'collection',
+        style: {
+          fontSize: '100%',
+          textAlign: "center"
+        }
+      });
 
-        UI.button({
-          parent: swalDiv,
-          id: "save-arr",
-          innerHTML: 'Save',
-          style: {
-            fontSize: '120%',
-            // textAlign: "center"
-          }
-        }, function() {
-          var params = {
+      UI.button({
+        parent: swalDiv,
+        id: "save-arr",
+        innerHTML: 'Save',
+        style: {
+          fontSize: '120%',
+          // textAlign: "center"
+        }
+      }, function() {
+        var params = {
           db: document.querySelector("#db-path").value,
           collection: document.querySelector("#collection").value,
           data: JSON.stringify(arr)
         };
-          $.post("/insert", params, function(r) {
-            console.log(r);
-          });
+        $.post("/insert", params, function(r) {
+          console.log(r);
+          if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+            swal("everything saved!");
+          }
         });
-      }});
+      });
+    }
+  });
 }
 
 function setHeadersFirstRow() {
@@ -275,10 +279,15 @@ function setColumnType(i, type, instance) {
         HOT.setDataAtCell(j, i, formattedDate);
         break;
 
-        case "Boolean":
-        HOT.setDataAtCell(j, i, Boolean(cell));
+      case "Boolean":
+        HOT.setDataAtCell(j, i, getBool(cell));
         break;
     }
+  }
+
+  function getBool(val) {
+    var num = +val;
+    return !isNaN(num) ? !!num : !!String(val).toLowerCase().replace(!!0, '');
   }
 
   instance.updateSettings({
@@ -331,7 +340,7 @@ function convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders) {
           else cell = parseIntRes;
           break;
 
-          case "Boolean":
+        case "Boolean":
           cell = Boolean(cell);
           break;
 
@@ -364,7 +373,7 @@ function convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders) {
 
       o[prop] = cell;
     }
-    if(!allRowsEmpty) arr.push(o);
+    if (!allRowsEmpty) arr.push(o);
   }
   return arr;
 }
