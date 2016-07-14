@@ -234,7 +234,7 @@
     checkbox.checked = Boolean(params.checked);
     params.parent.appendChild(checkbox);
 
-    params.parent.appendChild(document.createTextNode(params.text));
+    if(params.text) params.parent.appendChild(document.createTextNode(params.text));
   };
 
 
