@@ -4,9 +4,9 @@ Admin interface for mongo, to work with documents as table rows. Integrates Hand
 
 ### why
 
-For me, collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clasters. Thats what pivot is about. And second thing, I like to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table or Google spreadsheet.
+For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clasters etc. Thats what pivot is about. And second thing, I used to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table or Google spreadsheet.
 
-If you are looking for a ful featured mongo admin, please check:
+If you are looking for a full featured mongo admin, please check:
 * [admin-mongo](https://www.npmjs.com/package/admin-mongo)
 * [mongoclient](http://www.mongoclient.com/)
 
@@ -33,6 +33,12 @@ alt="add rows" width="480" height="270" border="10" /></a>
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=eg8KG5Xw3Rc
 " target="_blank"><img src="http://img.youtube.com/vi/eg8KG5Xw3Rc/0.jpg" 
+alt="add rows" width="480" height="270" border="10" /></a>
+
+[inline edit data (localhost:12369)](localhost:12369) example on youtube:
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=IkbTDQo2VwM
+" target="_blank"><img src="http://img.youtube.com/vi/IkbTDQo2VwM/0.jpg" 
 alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
