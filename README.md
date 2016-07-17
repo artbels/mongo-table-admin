@@ -1,6 +1,6 @@
 # mongo-table-admin (MTA)
 
-Admin interface for mongo, to work with documents as table rows. Integrates Handsontables, Pivottable, Ace JSON editor. Handsontable is a great inline edit tool. Pivottable is data discovery and analisys tool.
+Admin interface for mongo, to work with documents as table rows. Integrates Handsontables, Pivottable. Handsontable is a great inline edit tool. Pivottable is data discovery and analisys tool.
 
 ### why
 
@@ -13,7 +13,7 @@ If you are looking for a full featured mongo admin, please check:
 ### features
 
 * Browse data using Pivottable
-* Inline edit using Handsontable (edit existing strings for now. Adding, deleting rows, columns is planned for future development)
+* Inline edit using Handsontable
 * Create new table using copy-paste data from regular table. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
 
 ### installation
@@ -42,10 +42,10 @@ alt="add rows" width="480" height="270" border="10" /></a>
 alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
-- [ ] build query in modal to save space
-- [ ] build simple query in modal (field == value)
-- [ ] display autosave status
-- [ ] choose collection from list
-- [ ] show warning if too many documents in collection - choose how many to show or limit by query
-- [ ] router - collection in url, type of view, simple filters 
-
+- [+] build query in modal to save space
+- [+] display autosave status
+- [+] choose collection from list
+- [+] show warning if too many documents in collection - choose how many to show or limit by query
+- [+] router - collection in url, type of view, simple filters 
+- [ ] set data type on save
+- [ ] upload data from json, csv, xls, xlsx and those zipped
