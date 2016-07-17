@@ -1,0 +1,110 @@
+<div class="navbar navbar-default navbar-static-top" style="background: #fff;">
+  <div class="container" id= "header" style="background: #fff;">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Mongo Table Admin</a>
+    </div>
+    <div class="collapse navbar-collapse navbar-right">
+      <ul class="nav navbar-nav">
+
+<!--         <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href='/table'>Table inline edit</a></li>
+            <li><a href='/pivot'>Pivot table</a></li>
+          </ul>
+        </li>   -->   
+
+        <li><a href='/table'>Table</a></li>
+        <li><a href='/pivot'>Pivot</a></li>
+
+        <li><a href='/create'>Create</a></li>
+
+        <li><a href='#' id="list">List</a>
+          <script>
+            var listNode = document.querySelector("#list");
+            listNode.onclick = function() {
+
+              var db = localStorage["input#db-path"];
+              if(!db) return console.log("show db swal");
+
+              $.post("/listcollections", {db: db}, function(list) {
+                console.log(list);
+
+                swal({
+                  title: "Choose collection",
+                  html: "<div id='swal-div'></div>",
+                  onOpen: function() {
+
+                    var swalDivNode = document.querySelector("#swal-div");
+                    var i = 0;
+                    var l = list.length;
+
+                    (function next() {
+                      var href = list[i].name;
+
+                      UI.span({
+                          parent: swalDivNode,
+                          innerHTML: "href",
+                          id: "span"+href
+                        });
+
+                      UI.link({
+                        parent: swalDivNode,
+                        href: href + "/pivot",
+                        title: "Table",
+                        id: href+ "table"
+                      });
+
+                      UI.span({
+                          parent: swalDivNode,
+                          innerHTML: " | ",
+                          id: "slash"+href
+                        });
+
+
+                      UI.link({
+                        parent: swalDivNode,
+                        href: href + "/pivot",
+                        title: "Pivot",
+                        id: href+"pivot"
+                      });
+
+                      i++;                      
+
+                      if (i < l) {
+
+                        UI.br({
+                          parent: swalDivNode,
+                          id: "comma"+href
+                        });
+
+                        next();
+                      }
+                    })();
+                  }
+                });
+              });
+            };
+          </script>
+        </li>
+
+      </ul>
+
+      <ul class="nav navbar-nav">
+        <li><a href='#' id="connection">Connection</a>
+          <script>
+            var connNode = document.querySelector("#connection");
+            connNode.onclick = function () {
+              console.log(1);
+            };
+          </script>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

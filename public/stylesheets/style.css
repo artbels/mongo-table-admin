@@ -1,8 +1,16 @@
 body {
-  padding: 10px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+#table-container {
+  padding: 10px;
 }
 
 a {
   color: #00B7FF;
+}
+
+hr {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
 }

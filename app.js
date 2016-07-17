@@ -19,29 +19,46 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bower_components', express.static(path.join(__dirname, 'bower_components')));
+app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 
 app.get('/', function(req, res) {
   res.render("index");
 });
 
-app.get('/create/', function(req, res) {
-  res.render("create");
+app.get('/create', function(req, res) {
+  res.render("pages/create");
+});
+
+app.get('/table', function(req, res) {
+  res.render("pages/table");
+});
+
+app.get('/pivot', function(req, res) {
+  res.render("pages/pivot");
 });
 
 app.post('/find', function(req, res) {
-  var databaseUri = req.body.db;
-  var collection = req.body.collection;
-  var query = req.body.query ? JSON.parse(req.body.query) : {};
+  MH.find(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
 
-  MongoClient.connect(databaseUri, function(e, db) {
-    if (e) return res.json(e);
+app.post('/updatebyid', function(req, res) {
+  MH.updateById(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
 
-    db.collection(collection).find(query).toArray(function(e, docs) {
-      if (e) return res.json(e);
 
-      res.json(docs);
-      db.close();
-    });
+app.post('/insert', function(req, res) {
+  MH.insert(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
   });
 });
 
@@ -53,67 +70,20 @@ app.post('/listcollections', function(req, res) {
   });
 });
 
-app.post('/update', function(req, res) {
-  var databaseUri = req.body.db;
-  var collection = req.body.collection;
-  var query = req.body.query ? JSON.parse(req.body.query) : {};
-  var update = req.body.update ? JSON.parse(req.body.update) : {};
-console.log(query);
-console.log(update);
-  MongoClient.connect(databaseUri, function(e, db) {
-    if (e) return res.json(e);
-
-    db.collection(collection).updateOne(query, update, function(e, r) {
-      if (e) return res.json(e);
-
-      res.json(r);
-      db.close();
-    });
-  });
-});
-
-
-app.post('/updatebyid', function(req, res) {
-  var databaseUri = req.body.db;
-  var collection = req.body.collection;
-  var objId = new ObjectID(req.body.id);
-  var update = req.body.update ? JSON.parse(req.body.update) : {};
-
-  MongoClient.connect(databaseUri, function(e, db) {
-    if (e) return res.json(e);
-
-    db.collection(collection).updateOne({_id: objId}, update, function(e, r) {
-      if (e) return res.json(e);
-
-      res.json(r);
-      db.close();
-    });
-  });
-});
-
-
-app.post('/insert', function(req, res) {
-  var databaseUri = req.body.db;
-  var collection = req.body.collection;
-  if (!req.body.data) return res.json("no data");
-
-  try {
-    var dataArr = JSON.parse(req.body.data);
-
-    MongoClient.connect(databaseUri, function(e, db) {
-      if (e) return res.json(e);
-
-      db.collection(collection).insert(dataArr, function(e, r) {
-        if (e) return res.json(e);
-
-        res.json(r);
-        db.close();
-      });
-    });
-
-  } catch (e) {
+app.post('/stats', function(req, res) {
+  MH.stats(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
     res.json(e);
-  }
+  });
+});
+
+app.post('/listdatabases', function(req, res) {
+  MH.listDatabases(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
 });
 
 

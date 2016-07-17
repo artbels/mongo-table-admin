@@ -1,6 +1,6 @@
 {
   "name": "mongo-table-admin",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "repository": {
     "type": "git",
     "url": "https://github.com/artbels/mongo-table-admin.git"
@@ -11,10 +11,16 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "~1.15.1",
+    "bootstrap": "^3.3.6",
     "debug": "~2.2.0",
     "ejs": "~2.4.1",
     "express": "~4.13.4",
+    "handsontable": "^0.26.0",
+    "jquery": "^2.2.4",
+    "mongodb": "^2.2.2",
     "morgan": "~1.7.0",
-    "simple-ui-builder": "^1.0.0"
+    "pivottable": "^2.1.0",
+    "simple-ui-builder": "^1.0.1",
+    "sweetalert2": "^4.0.10"
   }
 }
