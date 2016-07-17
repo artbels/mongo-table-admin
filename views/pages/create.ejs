@@ -35,7 +35,7 @@
     padding: 0;
     font-size: 13px;
     display: none;
-    z-index: 10;
+    z-index: 100;
   }
 
   .changeTypeMenu li {
@@ -68,8 +68,10 @@
 
   <script src="node_modules/handsontable/dist/handsontable.full.js"></script>
   <link rel="stylesheet" media="screen" href="node_modules/handsontable/dist/handsontable.full.css">
-  
+
   <% include ../partitials/bodyend.ejs %>
+
+  <script src="/libs/handsontable.helpers.js"></script>
 
   <script src="controllers/create.js"></script>
 </body>

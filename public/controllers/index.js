@@ -108,7 +108,8 @@ function getDataMongo(params) {
         title: "Valid JSON please",
         html: "<textarea  id='query' cols='60' rows='12' style='font-family: monospace; font-size: 12px'></textarea><div id='swal-div'></div>",
         onOpen: function() {
-
+          queryNode = document.querySelector("#query");
+          queryNode.value = localStorage.queryCode || "{}";
         }
       }).then(function() {
         queryNode = document.querySelector("#query");
@@ -122,8 +123,6 @@ function getDataMongo(params) {
           console.warn(e);
         }
       });
-      queryNode = document.querySelector("#query");
-      queryNode.value = localStorage.queryCode || "{}";
     });
 
     UI.button({
@@ -218,10 +217,10 @@ function printTable(arr, params) {
     colHeaders: colHeaders,
     columns: columns,
     minSpareRows: minSpareRows,
-    rowHeaders: false,
+    rowHeaders: true,
     autoColSize: true,
     contextMenu: false, //TODO: add row and remove row callbacks
-    comments: false,
+    comments: ['remove_row'],
     afterChange: afterChange,
 
     // afterRemoveRow: afterRemoveRow
@@ -235,15 +234,6 @@ function printTable(arr, params) {
     var arr = convArrOfArrToArrOfObj(hot.getData(), minSpareRows, colHeaders);
 
     var chObj = convChangesObjArr(changes, arr);
-
-    if(Object.keys(chObj.new).length) {
-
-    }
-
-    for (var i = 0; i < changeObj.newArr.length; i++) {
-      var n = changeObj.newArr[i];
-
-    }
 
     var len = changes.length;
     var i = 0;
@@ -306,6 +296,12 @@ function printTable(arr, params) {
 
     console.log(rowNum, numRows, rowCount);
   }
+}
+
+function saveNew(o) {
+  var i = 0;
+  var l = Object.keys(o).length;
+
 }
 
 function convChangesObjArr(changes, arr) {

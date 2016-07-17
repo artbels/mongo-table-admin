@@ -7,10 +7,19 @@ MH.find = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection) return err("!params.db || !params.collection");
 
+    if (params.query) {
+      try {
+        params.query = JSON.parse(params.query);
+      } catch (e) {
+        params.query = {};
+        err(e);
+      }
+    } else params.query = {};
+
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).find(params.query || {}).toArray(function(e, docs) {
+      db.collection(params.collection).find(params.query).toArray(function(e, docs) {
         if (e) return err(e);
 
         res(docs);
@@ -52,10 +61,40 @@ MH.updateById = function(params) {
 
     params.id = new ObjectID(params.id);
 
+    try {
+        params.update = JSON.parse(params.update);
+      } catch (e) {
+        return err(e);
+      }
+
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).updateOne({_id: objId}, params.update, function(e, r) {
+      db.collection(params.collection).updateOne({
+        _id: params.id
+      }, params.update, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MH.removeById = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection || !params.id) return err("!params.db || !params.collection || !params.id");
+
+    params.id = new ObjectID(params.id);
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).remove({
+        _id: params.id
+      }, function(e, r) {
         if (e) return err(e);
 
         res(r);

@@ -8,7 +8,7 @@
   <% include ../partitials/navbar.ejs %>
 
   <div id="control"></div>
-  <div id="output"></div>
+  <div id="table-container"><div id="output"></div></div>
 
   <% include ../partitials/bodyend.ejs %>
 
@@ -21,13 +21,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
 
   <!-- PivotTable.js libs from ../dist -->
-  <link rel="stylesheet" type="text/css" href="node_modules/pivottable/dist/pivot.min.css">
-  <script src="node_modules/pivottable/dist/pivot.min.js"></script>
-  <script src="node_modules/pivottable/dist/export_renderers.min.js"></script>
-  <script src="node_modules/pivottable/dist/d3_renderers.min.js"></script>
-  <script src="node_modules/pivottable/dist/c3_renderers.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/node_modules/pivottable/dist/pivot.min.css">
+  <script src="/node_modules/pivottable/dist/pivot.min.js"></script>
+  <script src="/node_modules/pivottable/dist/export_renderers.min.js"></script>
+  <script src="/node_modules/pivottable/dist/d3_renderers.min.js"></script>
+  <script src="/node_modules/pivottable/dist/c3_renderers.min.js"></script>
 
-  <script src="controllers/pivot.js"></script>
+  <script src="/controllers/pivot.js"></script>
 
 </body>
 </html>

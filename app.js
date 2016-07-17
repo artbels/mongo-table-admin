@@ -22,18 +22,18 @@ app.use('/bower_components', express.static(path.join(__dirname, 'bower_componen
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 
 app.get('/', function(req, res) {
-  res.render("index");
+  res.render("pages/index");
 });
 
 app.get('/create', function(req, res) {
   res.render("pages/create");
 });
 
-app.get('/table', function(req, res) {
+app.get('/:db/:collection/table', function(req, res) {
   res.render("pages/table");
 });
 
-app.get('/pivot', function(req, res) {
+app.get('/:db/:collection/pivot', function(req, res) {
   res.render("pages/pivot");
 });
 
@@ -47,6 +47,15 @@ app.post('/find', function(req, res) {
 
 app.post('/updatebyid', function(req, res) {
   MH.updateById(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
+
+
+app.post('/removebyid', function(req, res) {
+  MH.removeById(req.body).then(function (r) {
     res.json(r);
   }).catch(function (e) {
     res.json(e);

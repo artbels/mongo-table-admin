@@ -33,6 +33,7 @@ HOT = new Handsontable(tableNode, {
   startCols: startCols,
   minSpareCols: minSpareCols,
   minSpareRows: minSpareRows,
+  manualColumnResize: true,
   columns: columns,
   rowHeaders: true,
   colHeaders: true,
@@ -44,31 +45,34 @@ HOT = new Handsontable(tableNode, {
 UI.button({
   parent: controlsNode,
   id: "set-first-row-headers",
-  innerHTML: "Set first row as headers"
+  className: "",
+  innerHTML: "Set first row as headers",
+  style: {
+    margin: "0px",
+    marginRight: "15px",
+    marginBottom: "5px"
+  }
 }, setHeadersFirstRow);
+
+
+// UI.fileReader({
+//   parent: controlsNode,
+//   id: "load",
+// }, loadFile);
 
 
 UI.button({
   parent: resultsNode,
   id: "save-data",
+  className: "",
   innerHTML: "Save data"
 }, function() {
   var hotData = HOT.getData();
   var colHeaders = HOT.getColHeader();
   var arr = convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders);
   saveDataMongo(arr);
-
 });
 
-// UI.button({
-//   parent: resultsNode,
-//   innerHTML: "Save schema",
-//   id: "save-schema",
-// }, function() {
-//   var colHeaders = HOT.getColHeader();
-//   console.log(buildParseSchema(columns, colHeaders));
-
-// });
 
 
 /**
@@ -80,7 +84,6 @@ function saveDataMongo(arr) {
   swal({
     // title: "Mongo URL",
     html: "Please enter mongo url<div id='swal-div'> </div>",
-    allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
     onOpen: function() {
@@ -95,7 +98,6 @@ function saveDataMongo(arr) {
           textAlign: "center"
         }
       });
-
 
       UI.input({
         parent: swalDiv,
@@ -216,7 +218,7 @@ function addButtonMenuEvent(button, menu) {
 function buildMenu(activeCellType) {
   var
     menu = document.createElement('UL'),
-    types = Object.keys(typesMap),
+    types = Object.keys(HH.typesMap),
     item;
 
   menu.className = 'changeTypeMenu';
@@ -257,7 +259,7 @@ function setColumnType(i, type, instance) {
 
   var colHeaders = HOT.getColHeader();
 
-  columns[i].type = typesMap[type];
+  columns[i].type = HH.typesMap[type];
   columns[i].jsType = type;
   // columns[i].data = colHeaders[i];
   if (type == "Date") columns[i].dateFormat = 'DD-MMM-YYYY';
@@ -379,14 +381,7 @@ function convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders) {
 }
 
 
-function buildParseSchema(columns, colHeaders) {
-  var schemeObj = {};
 
-  for (var i = 0; i < columns.length; i++) {
-    var item = columns[i];
-    schemeObj[colHeaders[i]] = {
-      type: item.jsType
-    };
-  }
-  return schemeObj;
+function loadFile(input) {
+  console.log(input);
 }

@@ -19,92 +19,59 @@
           </ul>
         </li>   -->   
 
-        <li><a href='/table'>Table</a></li>
-        <li><a href='/pivot'>Pivot</a></li>
+        <li><a href='#' id="table-link">Table</a></li>
+        <li><a href='#' id="pivot-link">Pivot</a></li>
 
         <li><a href='/create'>Create</a></li>
 
         <li><a href='#' id="list">List</a>
-          <script>
-            var listNode = document.querySelector("#list");
-            listNode.onclick = function() {
-
-              var db = localStorage["input#db-path"];
-              if(!db) return console.log("show db swal");
-
-              $.post("/listcollections", {db: db}, function(list) {
-                console.log(list);
-
-                swal({
-                  title: "Choose collection",
-                  html: "<div id='swal-div'></div>",
-                  onOpen: function() {
-
-                    var swalDivNode = document.querySelector("#swal-div");
-                    var i = 0;
-                    var l = list.length;
-
-                    (function next() {
-                      var href = list[i].name;
-
-                      UI.span({
-                          parent: swalDivNode,
-                          innerHTML: "href",
-                          id: "span"+href
-                        });
-
-                      UI.link({
-                        parent: swalDivNode,
-                        href: href + "/pivot",
-                        title: "Table",
-                        id: href+ "table"
-                      });
-
-                      UI.span({
-                          parent: swalDivNode,
-                          innerHTML: " | ",
-                          id: "slash"+href
-                        });
-
-
-                      UI.link({
-                        parent: swalDivNode,
-                        href: href + "/pivot",
-                        title: "Pivot",
-                        id: href+"pivot"
-                      });
-
-                      i++;                      
-
-                      if (i < l) {
-
-                        UI.br({
-                          parent: swalDivNode,
-                          id: "comma"+href
-                        });
-
-                        next();
-                      }
-                    })();
-                  }
-                });
-              });
-            };
-          </script>
         </li>
 
       </ul>
 
       <ul class="nav navbar-nav">
-        <li><a href='#' id="connection">Connection</a>
-          <script>
-            var connNode = document.querySelector("#connection");
-            connNode.onclick = function () {
-              console.log(1);
-            };
-          </script>
+        <li><a href='#' id="connection">DB</a>
+
         </li>
       </ul>
     </div>
   </div>
 </div>
+
+<script>
+  var connNode = document.querySelector("#connection");
+  connNode.onclick = function () {
+    var dbPath = localStorage["input#db-path"];
+    if(!dbPath) return Nav.dbPath();
+
+    Nav.dbs();
+  };
+
+  var listNode = document.querySelector("#list");
+  listNode.onclick = function() {
+
+    var dbPath = localStorage["input#db-path"];
+    if(!dbPath) return Nav.dbPath();
+
+    Nav.collections();              
+  };
+
+  var tableNode = document.querySelector("#table-link");
+  tableNode.onclick = function () {
+    var newUrl = Nav.changeView("table");
+
+    if(newUrl != window.location.href) {
+      window.location.href = Nav.changeView("table");
+    } else Nav.collections();
+    
+  };
+
+  var pivotNode = document.querySelector("#pivot-link");
+  pivotNode.onclick = function () {
+    var newUrl = Nav.changeView("pivot");
+
+    if(newUrl != window.location.href) {
+      window.location.href = Nav.changeView("pivot");
+    } else Nav.collections();
+  };
+</script>
