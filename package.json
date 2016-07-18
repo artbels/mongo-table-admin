@@ -1,9 +1,19 @@
 {
   "name": "mongo-table-admin",
+  "description": "Admin interface for mongo, to work with documents as table rows. Integrates Handsontables, Pivottable.",
+  "keywords": ["mongo", "inline edit", "mongo admin", "pivot table", "handsontable", "import data to mongo"],
   "version": "0.9.6",
+  "author": {
+    "name": "Artem Bilodid",
+    "email": "artbels@gmail.com",
+    "url": "http://fb.com/artbels"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/artbels/mongo-table-admin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/artbels/mongo-table-admin/issues"
   },
   "scripts": {
     "start": "node ./bin/www"
