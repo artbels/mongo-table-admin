@@ -1,7 +1,35 @@
 var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
+var reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i;
 
 var MH = module.exports = {};
+
+MH.count = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection) return err("!params.db || !params.collection");
+
+    if (params.query) {
+      try {
+        params.query = JSON.parse(params.query);
+      } catch (e) {
+        params.query = {};
+        err(e);
+      }
+    } else params.query = {};
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).count(params.query, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
 
 MH.find = function(params) {
   return new Promise(function(res, err) {
@@ -37,6 +65,15 @@ MH.insert = function(params) {
 
     try {
       params.data = JSON.parse(params.data);
+
+      for (var i = 0; i < params.data.length; i++) {
+        var row = params.data[i];
+        for (var key in row) {
+          var item = row[key];
+          if (reJsStrData.test(item)) params.data[i][key] = new Date(item);
+        }
+      }
+      
     } catch (e) {
       err(e);
     }
@@ -62,17 +99,23 @@ MH.updateById = function(params) {
     params.id = new ObjectID(params.id);
 
     try {
-        params.update = JSON.parse(params.update);
-      } catch (e) {
-        return err(e);
+      params.update = JSON.parse(params.update);
+      for (var key in params.update) {
+        var item = params.update[key];
+        if (reJsStrData.test(item)) params.update[key] = new Date(item);
       }
+    } catch (e) {
+      return err(e);
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
       db.collection(params.collection).updateOne({
         _id: params.id
-      }, params.update, function(e, r) {
+      }, {
+        "$set": params.update
+      }, function(e, r) {
         if (e) return err(e);
 
         res(r);
@@ -95,6 +138,93 @@ MH.removeById = function(params) {
       db.collection(params.collection).remove({
         _id: params.id
       }, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MH.remove = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection) return err("!params.db || !params.collection");
+
+    if (params.query) {
+      try {
+        params.query = JSON.parse(params.query);
+      } catch (e) {
+        params.query = {};
+        err(e);
+      }
+    } else params.query = {};
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).remove(params.query, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MH.rename = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection || !params.old || !params.new) return err("!params.db || !params.collection || !params.old || !params.new");
+
+    if (params.query) {
+      try {
+        params.query = JSON.parse(params.query);
+      } catch (e) {
+        params.query = {};
+        err(e);
+      }
+    } else params.query = {};
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      var renameObj = {};
+      renameObj[params.old] = params.new;
+
+      db.collection(params.collection).updateMany(params.query, { "$rename": renameObj}, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MH.unsetField = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
+
+    if (params.query) {
+      try {
+        params.query = JSON.parse(params.query);
+      } catch (e) {
+        params.query = {};
+        err(e);
+      }
+    } else params.query = {};
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      var unsetObj = {};
+      unsetObj[params.field] = "";
+
+      db.collection(params.collection).updateMany(params.query, { "$unset": unsetObj}, function(e, r) {
         if (e) return err(e);
 
         res(r);

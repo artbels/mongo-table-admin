@@ -45,6 +45,14 @@ app.post('/find', function(req, res) {
   });
 });
 
+app.post('/count', function(req, res) {
+  MH.count(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
+
 app.post('/updatebyid', function(req, res) {
   MH.updateById(req.body).then(function (r) {
     res.json(r);
@@ -56,6 +64,33 @@ app.post('/updatebyid', function(req, res) {
 
 app.post('/removebyid', function(req, res) {
   MH.removeById(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
+
+
+app.post('/remove', function(req, res) {
+  MH.remove(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
+
+
+app.post('/rename', function(req, res) {
+  MH.rename(req.body).then(function (r) {
+    res.json(r);
+  }).catch(function (e) {
+    res.json(e);
+  });
+});
+
+
+app.post('/unsetfield', function(req, res) {
+  MH.unsetField(req.body).then(function (r) {
     res.json(r);
   }).catch(function (e) {
     res.json(e);

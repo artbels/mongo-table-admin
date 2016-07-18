@@ -1,14 +1,14 @@
-var params = Nav.getCollectionFromUrl();
+var params = Nav.getCollectionFromUrl(); //todo: create clone of params on requests?
+var controlNode = document.querySelector("#control");
 
 var statusNode;
-var hot, columns, colHeaders, idArr, minSpareRows = 1;
+var hot, columns, colHeaders, idArr, minSpareRows = 1; //todo: group in one object?
 
 getDataMongo(params);
 
 function getDataMongo(params) {
 
   $.post("/find", params, function(arr) {
-    console.log(arr);
 
     if (arr.length >= 1000) {
       var limit = prompt("There are " + arr.length + " rows found. How much to load?", 1000);
@@ -19,30 +19,68 @@ function getDataMongo(params) {
       innerHTML: "Build query",
       id: "build-query",
       className: "",
-      parent: document.querySelector("#control"),
+      parent: controlNode,
 
     }, function() {
       var queryNode;
       swal({
         title: "Valid JSON please",
+        showCancelButton: false,
+        showConfirmButton: false,
         html: "<textarea  id='query' cols='60' rows='12' style='font-family: monospace; font-size: 12px'></textarea><div id='swal-div'></div>",
         onOpen: function() {
           queryNode = document.querySelector("#query");
           queryNode.value = localStorage.queryCode || "{}";
+          var swalNode = document.querySelector("#swal-div");
+
+          UI.button({
+            innerHTML: "Find",
+            id: "find",
+            className: "btn btn-primary",
+            parent: swalNode,
+
+          }, function() {
+            var query = {};
+            try {
+              query = JSON.parse(queryNode.value);
+              localStorage.queryCode = JSON.stringify(query);
+              params.query = JSON.stringify(query);
+              getDataMongo(params);
+            } catch (e) {
+              console.warn(e);
+            }
+            swal.close();
+          });
+
+          UI.button({
+            innerHTML: "Remove",
+            id: "remove",
+            className: "btn btn-danger",
+            parent: swalNode,
+
+          }, function() {
+            
+            var query = {};
+            try {
+              query = JSON.parse(queryNode.value);
+              localStorage.queryCode = JSON.stringify(query);
+              params.query = JSON.stringify(query);
+
+              $.post("/remove", params, function(r) {
+                if (r && r.ok && (r.ok == 1)) {
+                  location.reload();
+
+                } else statusNode.innerHTML = JSON.stringify(r);
+              });
+              
+            } catch (e) {
+              console.warn(e);
+            }
+            swal.close();
+          });
         }
 
-      }).then(function() {
-        queryNode = document.querySelector("#query");
-        var query = {};
-        try {
-          query = JSON.parse(queryNode.value);
-          localStorage.queryCode = JSON.stringify(query);
-          params.query = JSON.stringify(query);
-          getDataMongo(params);
-        } catch (e) {
-          console.warn(e);
-        }
-      });
+      }).then(function() {}).catch(function() {});
     });
 
 
@@ -50,7 +88,7 @@ function getDataMongo(params) {
       innerHTML: "Reset query",
       id: "reset-query",
       className: "",
-      parent: document.querySelector("#control"),
+      parent: controlNode,
     }, function() {
       localStorage.queryCode = "{}";
       params.query = "{}";
@@ -62,11 +100,12 @@ function getDataMongo(params) {
       innerHTML: "Add field",
       id: "add-column",
       className: "",
-      parent: document.querySelector("#control"),
+      parent: controlNode,
     }, function() {
       swal({
         title: "Add column",
         html: "<div id='swal-div' align='center'></div>",
+        showCancelButton: true,
         onOpen: function(r) {
           var swalNode = document.querySelector("#swal-div");
 
@@ -75,14 +114,30 @@ function getDataMongo(params) {
             id: "field-name",
             className: "",
             parent: swalNode,
+            value: "",
             style: {
               width: "180px",
               textAlign: "center"
             }
           });
 
+          document.querySelector("#field-name").onkeyup = checkFieldExist;
+          document.querySelector("#field-name").onchange = checkFieldExist;
+
+          function checkFieldExist() {
+            var fieldName = document.querySelector("#field-name").value;
+            if (colHeaders.indexOf(fieldName) != -1) {
+              swal.showValidationError(fieldName + " is already exists");
+              swal.disableButtons();
+            } else {
+              swal.resetValidationError();
+              swal.enableButtons();
+            }
+          }
+
           UI.br({
-            parent: swalNode,
+            id: "add-column-span",
+            parent: swalNode
           });
 
           UI.select(Object.keys(HH.typesMap), {
@@ -90,16 +145,28 @@ function getDataMongo(params) {
             id: "field-type",
             parent: swalNode
           }, function(jsType) {});
+
+          document.querySelector("#field-typeSelect").value = "string";
         }
       }).then(function() {
-        var col = {
-          data: document.querySelector("#field-name").value,
-          jsType: document.querySelector("#field-typeSelect").value
-        };
+        var propNode = document.querySelector("#field-name");
+        var jsTypeNode = document.querySelector("#field-typeSelect");
 
-        col.type = HH.typesMap[col.jsType];
-        if (col.jsType == "Date") col.dateFormat = 'DD-MMM-YYYY';
-        if (!col.data || !col.jsType) return;
+        if (!propNode || !propNode.value) {
+          return swal({
+            type: "warning",
+            title: "no field name"
+          });
+        }
+
+        if (colHeaders.indexOf(propNode.value) != -1) {
+          return swal({
+            type: "warning",
+            title: propNode.value + " already exists"
+          });
+        }
+
+        var col = HH.setColType(propNode.value, jsTypeNode.value || "string");
 
         columns.push(col);
         colHeaders.push(col.data);
@@ -108,17 +175,128 @@ function getDataMongo(params) {
           colHeaders: colHeaders,
           columns: columns
         });
-      });
+      }).catch(function() {});
+    });
+
+
+    UI.button({
+      innerHTML: "Rename field",
+      id: "rename-field",
+      className: "",
+      parent: controlNode,
+    }, function() {
+      swal({
+        title: "Rename field",
+        html: "<div id='swal-div' align='center'></div>",
+        showCancelButton: true,
+        onOpen: function(r) {
+          var swalNode = document.querySelector("#swal-div");
+
+          var noIdColHeaders = colHeaders.filter(function(r) {
+            if (r != "_id") return r;
+          });
+
+          UI.select(noIdColHeaders, {
+            id: "field-to-rename",
+            parent: swalNode
+          }, function(jsType) {});
+
+          // document.querySelector("#field-to-renameSelect").value = noIdColHeaders.pop();
+
+          UI.br({
+            id: "field-to-rename-br",
+            parent: swalNode
+          });
+
+          UI.input({
+            placeholder: "New name",
+            id: "new-name",
+            value: "",
+            className: "",
+            parent: swalNode,
+            style: {
+              width: "180px",
+              textAlign: "center"
+            }
+          });
+        }
+      }).then(function() {
+        params.old = document.querySelector("#field-to-renameSelect").value;
+        params.new = document.querySelector("#new-name").value;
+
+        if (!params.old || !params.new) {
+          return swal({
+            type: "warning",
+            title: "no new or old"
+          });
+        }
+
+        $.post("/rename", params, function(r) {
+          if (r && r.ok && (r.ok == 1)) {
+            getDataMongo(params);
+          } else statusNode.innerHTML = JSON.stringify(r);
+        });
+      }).catch(function() {});
+    });
+
+
+    UI.button({
+      innerHTML: "Delete field",
+      id: "delete-field",
+      className: "",
+      parent: controlNode,
+    }, function() {
+      swal({
+        title: "Delete field",
+        showCancelButton: true,
+        html: "<div id='swal-div' align='center'></div>",
+        onOpen: function(r) {
+          var swalNode = document.querySelector("#swal-div");
+
+          var noIdColHeaders = colHeaders.filter(function(r) {
+            if (r != "_id") return r;
+          });
+
+          UI.select(noIdColHeaders, {
+            id: "field-to-delete",
+            parent: swalNode
+          }, function(jsType) {});
+
+          // document.querySelector("#field-to-deleteSelect").value = noIdColHeaders.pop();
+
+        }
+      }).then(function() {
+        params.field = document.querySelector("#field-to-deleteSelect").value;
+
+        if (!params.field) {
+          return swal({
+            type: "warning",
+            title: "no field to delete"
+          });
+        }
+
+        $.post("/unsetfield", params, function(r) {
+          if (r && r.ok && (r.ok == 1)) {
+            location.reload();
+          } else statusNode.innerHTML = JSON.stringify(r);
+        });
+      }).catch(function() {});
     });
 
 
     UI.span({
       innerHTML: arr.length + " rows found",
       id: "status-span",
-      parent: document.querySelector("#control"),
+      parent: controlNode,
+      style: {
+        color: "#808080",
+        fontSize: "90%"
+      }
     });
 
     statusNode = document.querySelector("#status-span");
+
+    updateStatusDelayed("Autosaving changes");
 
     printTable(arr, params);
   });
@@ -134,11 +312,13 @@ function printTable(arr, params) {
     container.removeChild(ex);
   }
 
-  var props = HH.getHeaders(arr);
+  var props = HH.buildSchema(arr);
+
   columns = props.columns;
-  console.log(columns);
   colHeaders = props.colHeaders;
   idArr = props.idArr;
+
+  arr = HH.stringifyArrObj(arr);
 
   hot = new Handsontable(container, {
     data: arr,
@@ -147,8 +327,9 @@ function printTable(arr, params) {
     rowHeaders: false,
     minSpareRows: minSpareRows,
     manualColumnResize: true,
+    manualColumnMove: true,
     autoColSize: true,
-    contextMenu: ['remove_row', 'remove_col'], //TODO: add row and remove row callbacks
+    contextMenu: ['remove_row'], //TODO: add row and remove row callbacks
     comments: false,
     afterChange: afterChange,
     afterRemoveRow: afterRemoveRow
@@ -156,126 +337,99 @@ function printTable(arr, params) {
 
   function afterChange(changes, src) {
 
-    if(src == "loadData") return;
+    if (src == "loadData") return;
     if (!changes || !changes.length) return;
-
-    console.log(changes, src);
 
     var data = hot.getData();
     colHeaders = hot.getColHeader();
     idArr = HH.updateIdArr(data, colHeaders);
 
     var chObj = HH.workChanges(changes, arr, columns);
-    console.log(chObj);
 
-    var newArr = Object.keys(chObj.new);
-    var updArr = Object.keys(chObj.upd);
+    if (chObj.newArr.length) {
+      var n = 0;
+      var nl = chObj.newArr.length;
 
-    if (newArr.length) {
-      var j = 0;
-      var l = newArr.length;
       (function next() {
-        var n = chObj.new[newArr[j]];
-        params.data = JSON.stringify([n]);
+        var newRowNum = Number(chObj.newArr[n]);
+        var newObj = chObj.new[newRowNum];
+        params.data = JSON.stringify([newObj]);
+
         $.post("/insert", params, function(r) {
           if (r && r.result && r.result.ok && (r.result.ok == 1)) {
 
             var newId = r.insertedIds[0];
-
-            var rowNum = newArr[j];
-            data[rowNum][0] = newId;
-            hot.setDataAtRowProp(rowNum, "_id", newId);
-
+            hot.setDataAtRowProp(newRowNum, "_id", newId);
             statusNode.innerHTML = newId + " added";
+
           } else statusNode.innerHTML = JSON.stringify(r);
-          j++;
-          if (j < l) {
-            next();
+          n++;
+          if (n < nl) next();
+          else {
+            updateStatusDelayed("Everything saved", 300);
+            updateStatusDelayed("Autosaving changes", 3300);
           }
         });
-
       })();
     }
 
 
-    var len = changes.length;
-    var i = 0;
-    next();
+    if (chObj.updArr.length) {
+      var u = 0;
+      var ul = chObj.updArr.length;
 
-    function next() {
-      var change = changes[i];
-      var rowNum = change[0];
-      var field = change[1];
-      var oldValue = change[2];
-      var newValue = change[3];
-      var changed = (oldValue != newValue);
-      var setId = (field === "_id");
-      var docId = idArr[rowNum];
+      (function next() {
+        var rowNum = chObj.updArr[u];
+        var update = chObj.upd[rowNum];
 
-      if (changed && !setId) {
-        if (!docId) {
-          // // console.log("new", docId, field, newValue);
-          // var o = {};
-          // o[field] = newValue;
+        params.id = idArr[rowNum];
+        params.update = JSON.stringify(update);
 
-          // params.data = JSON.stringify([o]);
+        $.post("/updatebyid", params, function(r) {
+          if (r && r.ok && (r.ok == 1)) {
+            statusNode.innerHTML = params.id + " updated";
 
-          // $.post("/insert", params, function(r) {
-          //   // console.log(r);
-          //   if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-          //     var newId = r.insertedIds[0];
-          //     var hotData = hot.getData();
-          //     hotData[rowNum][0] = newId;
-          //     hot.setDataAtRowProp(rowNum, "_id", newId);
-
-          //     statusNode.innerHTML = newId + " added";
-          //   }
-
-          //   cb();
-          // });
-        } else {
-
-          params.id = docId;
-          var update = {};
-          update[field] = newValue;
-          params.update = JSON.stringify({
-            "$set": update
-          });
-          $.post("/updatebyid", params, function(r) {
-            if (r && r.ok && (r.ok == 1)) {
-              statusNode.innerHTML = docId + " updated";
-            }
-            cb();
-          });
-        }
-      }
-    }
-
-    function cb() {
-      i++;
-      if (i < len) next();
-      else {
-        console.log("all saved");
-      }
+          } else statusNode.innerHTML = JSON.stringify(r);
+          u++;
+          if (u < ul) next();
+          else {
+            updateStatusDelayed("Everything saved", 300);
+            updateStatusDelayed("Autosaving changes", 3300);
+          }
+        });
+      })();
     }
   }
 
   function afterRemoveRow(rowNum, numRows) {
     var i = rowNum;
     var l = numRows + rowNum;
-    (function next() {
 
+    (function next() {
       params.id = idArr[rowNum];
+
       $.post("/removebyid", params, function(r) {
         if (r && r.ok && (r.ok == 1)) {
           statusNode.innerHTML = params.id + " deleted";
+
         } else statusNode.innerHTML = JSON.stringify(r);
         rowNum++;
         numRows--;
-        if (numRows > 0) {
-          next();
+
+        if (numRows > 0) next();
+        else {
+          updateStatusDelayed("Autosaving changes", 3300);
         }
       });
     })();
   }
+}
+
+function updateStatusDelayed(text, delay) {
+  if (!text) return;
+  delay = delay || 3000;
+
+  setTimeout(function() {
+    statusNode.innerHTML = text;
+  }, delay);
 }

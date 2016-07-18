@@ -10,6 +10,8 @@ If you are looking for a full featured mongo admin, please check:
 * [admin-mongo](https://www.npmjs.com/package/admin-mongo)
 * [mongoclient](http://www.mongoclient.com/)
 
+Caution! App is still under heavy development. Don't use it on data you did not backed up.
+
 ### features
 
 * Browse data using Pivottable

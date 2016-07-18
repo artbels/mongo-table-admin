@@ -100,8 +100,6 @@
       db: dbPath
     }, function(list) {
 
-      console.log(list);
-
       if(!list.databases) return Nav.dbPath();
 
       swal({

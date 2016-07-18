@@ -3,12 +3,13 @@
 
   var HH = this.HH = {};
 
+  HH.reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i;
+
 
   HH.typesMap = {
     "string": "text",
     "number": "numeric",
     "boolean": "checkbox",
-    "array": "text",
     "object": "text",
     "date": "date"
   };
@@ -23,16 +24,30 @@
       var item = data[i];
       for (var j = 0; j < colHeaders.length; j++) {
         var col = colHeaders[j];
-        if(col == "_id") {
+        if (col == "_id") {
           idArr.push(item[j]);
         }
-      }             
+      }
     }
     return idArr;
   };
 
 
-  HH.getHeaders = function(arr) {
+  HH.setColType = function(prop, jsType) {
+
+    var col = {
+      data: prop,
+      jsType: jsType
+    };
+
+    col.type = HH.typesMap[col.jsType];
+    if (prop == "_id") col.readOnly = true;
+    if (col.jsType == "date") col.dateFormat = 'DD-MMM-YYYY';
+    return col;
+  };
+
+
+  HH.buildSchema = function(arr) {
 
     var props = {};
 
@@ -46,19 +61,18 @@
       var row = arr[i];
       o.idArr.push(row._id);
       for (var key in row) {
-        var jsType = typeof row[key];
-        props[key] = jsType;
+        var val = row[key];
+        var jsType = typeof val;
+        if(jsType == "string") {
+          if(HH.reJsStrData.test(val)) jsType = "date";
+        }
+        if (!props[key]) props[key] = jsType;
       }
     }
 
     for (var prop in props) {
-      var field = {
-        data: prop,
-        jsType: props[prop]
-      };
-      field.type = HH.typesMap[field.jsType];
-      if (prop == "_id") field.readOnly = true;
-      o.columns.push(field);
+      var col = HH.setColType(prop, props[prop]);
+      o.columns.push(col);
       o.colHeaders.push(prop);
     }
     return o;
@@ -67,6 +81,44 @@
 
   HH.setDataType = function(data, type) {
 
+    switch (type) {
+      case "number":
+        var parseIntRes = parseInt(data, 10);
+        if (isNaN(parseIntRes)) data = undefined;
+        else data = parseIntRes;
+        break;
+
+      case "boolean":
+        data = Boolean(data);
+        break;
+
+      case "array":
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          data = data.split(/,|;|\t/);
+        }
+        break;
+
+      case "object":
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          console.log(e);
+        }
+        break;
+
+      case "date":
+        if (data) {
+          try {
+            data = new Date(data);
+          } catch (e) {
+            console.log(e);
+          }
+        }
+        break;
+    }
+    return data;
   };
 
 
@@ -84,15 +136,16 @@
       var oldValue = change[2];
       var newValue = change[3];
       var changed = (oldValue != newValue);
-      
+
       if (!changed) continue;
 
-      var rowNum = change[0];
+      var rowNum = Number(change[0]);
       var field = change[1];
-      var fieldType = columns.filter(function (a) {
-        if(a.data == field) return a;
-      })[0].jsType;
-      console.log(fieldType);
+      var fieldType;
+      for (var t = 0; t < columns.length; t++) {
+        var col = columns[t];
+        if (col.data == field) fieldType = col.jsType;
+      }
       var setId = (field === "_id");
       if (setId) continue;
 
@@ -100,22 +153,19 @@
 
       if (docId) {
         o.upd[rowNum] = o.upd[rowNum] || {};
-        o.upd[rowNum][field] = newValue;
+        o.upd[rowNum][field] = HH.setDataType(newValue, fieldType);
       } else {
         o.new[rowNum] = o.new[rowNum] || {};
-        o.new[rowNum][field] = newValue;
+        o.new[rowNum][field] = HH.setDataType(newValue, fieldType);
       }
     }
+
+    o.newArr = Object.keys(o.new);
+    o.updArr = Object.keys(o.upd);
 
     return o;
   };
 
-
-
-
-  HH.convJsTypeToHHType = function(jsType) {
-
-  };
 
 
   HH.convArrArrToArrObj = function(hotData, minSpareRows, colHeaders) {
@@ -189,6 +239,28 @@
       };
     }
     return schemeObj;
+  };
+
+
+  HH.stringifyArrObj = function(arr) {
+
+    if ((!arr) && (typeof(arr[0]) != "object")) {
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      var row = arr[i];
+      for (var key in row) {
+        var cell = row[key];
+        var type = typeof cell;
+        var isDate = HH.reJsStrData.test(cell);
+        
+        if (type == "object") arr[i][key] = JSON.stringify(cell);
+        else if(isDate) arr[i][key] = moment(new Date(cell)).format('DD-MMM-YYYY');
+
+      }
+    }
+    return arr;
   };
 
 })();
