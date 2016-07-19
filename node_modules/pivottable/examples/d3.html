@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pivot Demo</title>
+        <!-- external libs from cdnjs -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+        <!-- PivotTable.js libs from ../dist -->
+        <link rel="stylesheet" type="text/css" href="../dist/pivot.css">
+        <script type="text/javascript" src="../dist/pivot.js"></script>
+        <script type="text/javascript" src="../dist/d3_renderers.js"></script>
+        <style>
+            body {font-family: Verdana;}
+            .node {
+              border: solid 1px white;
+              font: 10px sans-serif;
+              line-height: 12px;
+              overflow: hidden;
+              position: absolute;
+              text-indent: 2px;
+            }
+        </style>
+        
+        <!-- optional: mobile support with jqueryui-touch-punch -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+        
+        <!-- for examples only! script to show code to user -->
+        <script type="text/javascript" src="show_code.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+    // This example of a D3 renderer shows a treemap.
+
+    $(function(){
+        $.getJSON("mps.json", function(mps) {
+            $("#output").pivotUI(mps, {
+                renderers: $.pivotUtilities.d3_renderers,
+                cols: [], rows: ["Province", "Party"],
+                rendererName: "Treemap"
+            });
+        });
+     });
+</script>
+
+        <p><a href="index.html">&laquo; back to examples</a></p>
+
+        <div id="output" style="margin: 30px;"></div>
+
+    </body>
+</html>

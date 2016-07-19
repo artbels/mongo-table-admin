@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pivot Demo</title>
+        <!-- external libs from cdnjs -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+        <!-- PivotTable.js libs from ../dist -->
+        <link rel="stylesheet" type="text/css" href="../dist/pivot.css">
+        <script type="text/javascript" src="../dist/pivot.js"></script>
+        <style>
+            body {font-family: Verdana;}
+        </style>
+        
+        <!-- optional: mobile support with jqueryui-touch-punch -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+        
+        <!-- for examples only! script to show code to user -->
+        <script type="text/javascript" src="show_code.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+    // Textarea below will refresh will display the configuration 
+    // object every time a user interacts, using the "onRefresh" 
+    // parameter. Instead of showing the configuration in a textarea, 
+    // one could store the configuration in a cookie or implement a 
+    // "save configuration" feature.
+
+    $(function(){
+        $.getJSON("mps.json", function(mps) {
+            $("#output2").pivotUI(mps, {
+                onRefresh: function(config) {
+                    var config_copy = JSON.parse(JSON.stringify(config));
+                    //delete some values which are functions
+                    delete config_copy["aggregators"];
+                    delete config_copy["renderers"];
+                    //delete some bulky default values
+                    delete config_copy["rendererOptions"];
+                    delete config_copy["localeStrings"];
+                    $("#output").text(JSON.stringify(config_copy, undefined, 2));
+                }
+            });
+        });
+     });
+        </script>
+        <p><a href="index.html">&laquo; back to examples</a></p>
+        <p style="width: 800px"></p>
+        <textarea id="output" 
+        style="float: left; width: 250px; height: 500px; margin: 10px;" readonly>
+        </textarea>
+        <div id="output2" style="margin: 30px;"></div>
+
+    </body>
+</html>
