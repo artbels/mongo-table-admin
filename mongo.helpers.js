@@ -63,19 +63,21 @@ MH.insert = function(params) {
 
     if (!params.db || !params.collection || !params.data) return err("!params.db || !params.collection || !params.data");
 
-    try {
-      params.data = JSON.parse(params.data);
+    if (typeof params.data == "string") {
+      try {
+        params.data = JSON.parse(params.data);
 
-      for (var i = 0; i < params.data.length; i++) {
-        var row = params.data[i];
-        for (var key in row) {
-          var item = row[key];
-          if (reJsStrData.test(item)) params.data[i][key] = new Date(item);
+        for (var i = 0; i < params.data.length; i++) {
+          var row = params.data[i];
+          for (var key in row) {
+            var item = row[key];
+            if (reJsStrData.test(item)) params.data[i][key] = new Date(item);
+          }
         }
-      }
 
-    } catch (e) {
-      err(e);
+      } catch (e) {
+        err(e);
+      }
     }
 
     MongoClient.connect(params.db, function(e, db) {
