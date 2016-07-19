@@ -8,14 +8,14 @@ MH.count = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection) return err("!params.db || !params.collection");
 
-    if (params.query) {
+    if (params.query && (typeof params.query == "string")) {
       try {
         params.query = JSON.parse(params.query);
       } catch (e) {
         params.query = {};
         err(e);
       }
-    } else params.query = {};
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -35,14 +35,14 @@ MH.find = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection) return err("!params.db || !params.collection");
 
-    if (params.query) {
+    if (params.query && (typeof params.query == "string")) {
       try {
         params.query = JSON.parse(params.query);
       } catch (e) {
         params.query = {};
         err(e);
       }
-    } else params.query = {};
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -73,7 +73,7 @@ MH.insert = function(params) {
           if (reJsStrData.test(item)) params.data[i][key] = new Date(item);
         }
       }
-      
+
     } catch (e) {
       err(e);
     }
@@ -148,18 +148,36 @@ MH.removeById = function(params) {
 };
 
 
+MH.distinct = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).distinct(params.field, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
 MH.remove = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection) return err("!params.db || !params.collection");
 
-    if (params.query) {
+    if (params.query && (typeof params.query == "string")) {
       try {
         params.query = JSON.parse(params.query);
       } catch (e) {
         params.query = {};
         err(e);
       }
-    } else params.query = {};
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -179,14 +197,14 @@ MH.rename = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.old || !params.new) return err("!params.db || !params.collection || !params.old || !params.new");
 
-    if (params.query) {
+    if (params.query && (typeof params.query == "string")) {
       try {
         params.query = JSON.parse(params.query);
       } catch (e) {
         params.query = {};
         err(e);
       }
-    } else params.query = {};
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -194,7 +212,9 @@ MH.rename = function(params) {
       var renameObj = {};
       renameObj[params.old] = params.new;
 
-      db.collection(params.collection).updateMany(params.query, { "$rename": renameObj}, function(e, r) {
+      db.collection(params.collection).updateMany(params.query, {
+        "$rename": renameObj
+      }, function(e, r) {
         if (e) return err(e);
 
         res(r);
@@ -209,14 +229,14 @@ MH.unsetField = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
 
-    if (params.query) {
+    if (params.query && (typeof params.query == "string")) {
       try {
         params.query = JSON.parse(params.query);
       } catch (e) {
         params.query = {};
         err(e);
       }
-    } else params.query = {};
+    }
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -224,7 +244,9 @@ MH.unsetField = function(params) {
       var unsetObj = {};
       unsetObj[params.field] = "";
 
-      db.collection(params.collection).updateMany(params.query, { "$unset": unsetObj}, function(e, r) {
+      db.collection(params.collection).updateMany(params.query, {
+        "$unset": unsetObj
+      }, function(e, r) {
         if (e) return err(e);
 
         res(r);

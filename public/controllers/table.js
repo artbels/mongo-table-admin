@@ -329,8 +329,9 @@ function printTable(arr, params) {
     manualColumnResize: true,
     manualColumnMove: true,
     autoColSize: true,
-    contextMenu: ['remove_row'], //TODO: add row and remove row callbacks
+    contextMenu: ['remove_row'],
     comments: false,
+    columnSorting: true,
     afterChange: afterChange,
     afterRemoveRow: afterRemoveRow
   });
