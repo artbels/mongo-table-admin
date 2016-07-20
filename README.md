@@ -50,4 +50,5 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [+] show warning if too many documents in collection - choose how many to show or limit by query
 - [+] router - collection in url, type of view, simple filters 
 - [+] set data type on save
-- [ ] upload data from json, csv, xls, xlsx and those zipped
+- [+] upload data from json, csv, xls, xlsx and those zipped
+- [ ] test

@@ -1,7 +1,7 @@
-var HOT;
-var controlsNode = document.querySelector("#controls");
-var tableNode = document.querySelector("#table");
-var resultsNode = document.querySelector("#results");
+var
+  controlsNode = document.querySelector("#controls"),
+  tableNode = document.querySelector("#table"),
+  resultsNode = document.querySelector("#results");
 
 var spinner = new Spinner({
   length: 40,
@@ -31,29 +31,33 @@ var papaConfig = {
   beforeFirstChunk: undefined
 };
 
-var minSpareCols = 0;
-var minSpareRows = 1;
-var startRows = 20;
-var startCols = 10;
-
-var columns = [];
+var
+  hot,
+  columns = [],
+  colHeaders = [],
+  minSpareCols = 0,
+  minSpareRows = 1,
+  startRows = 20,
+  startCols = 10;
 
 for (var i = 0; i < startCols; i++) {
   columns.push({
     type: 'text',
     jsType: "string"
   });
+  colHeaders.push(i + 1);
 }
 
-HOT = new Handsontable(tableNode, {
+
+hot = new Handsontable(tableNode, {
   startRows: startRows,
   startCols: startCols,
   minSpareCols: minSpareCols,
   minSpareRows: minSpareRows,
   manualColumnResize: true,
   columns: columns,
+  colHeaders: colHeaders,
   rowHeaders: true,
-  colHeaders: true,
   contextMenu: true,
   afterGetColHeader: afterGetColHeader
 });
@@ -75,7 +79,7 @@ UI.button({
 UI.fileReader({
   parent: controlsNode,
   id: "load",
-}, loadFile); //todo: think how to start spinner. If do onchange, it changes deafult onchange
+}, loadFile); //todo: think how to start spinner. If do onchange, it changes default onchange
 
 
 UI.button({
@@ -84,8 +88,8 @@ UI.button({
   className: "",
   innerHTML: "Save data"
 }, function() {
-  var hotData = HOT.getData();
-  var colHeaders = HOT.getColHeader();
+  var hotData = hot.getData();
+  var colHeaders = hot.getColHeader();
   var arr = HH.convArrArrToArrObj(hotData, minSpareRows, colHeaders, columns);
   saveDataMongo(arr);
 });
@@ -135,44 +139,53 @@ function saveDataMongo(arr) {
           // textAlign: "center"
         }
       }, function() {
-
-        var chunkSize = 100;
-        var chunks = Math.ceil(arr.length / chunkSize);
-        var currChunk = 0;
-
-        (function workChunk() {
-          var start = currChunk * chunkSize;
-          var currArr = arr.slice(start, chunkSize * (currChunk + 1));
-
-          var params = {
-            db: document.querySelector("#db-path").value,
-            collection: document.querySelector("#collection").value,
-            data: JSON.stringify(currArr)
-          };
-          $.post("/mongo/insert", params, function(r) {
-            if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-
-              currChunk++;
-              if (currChunk < chunks) workChunk();
-              else {
-                swal("everything saved!");
-              }
-            }
-          });
-        })();
+        saveArrMongoChunks(arr);
       });
     }
-  });
+  }).catch(function() {});
+}
+
+
+function saveArrMongoChunks(arr) {
+  spinner.spin(document.body);
+
+  var chunkSize = 100;
+  var chunks = Math.ceil(arr.length / chunkSize);
+  var currChunk = 0;
+
+  (function workChunk() {
+    var start = currChunk * chunkSize;
+    var currArr = arr.slice(start, chunkSize * (currChunk + 1));
+
+    var params = {
+      db: document.querySelector("#db-path").value,
+      collection: document.querySelector("#collection").value,
+      data: JSON.stringify(currArr)
+    };
+    $.post("/mongo/insert", params, function(r) {
+      if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+
+        currChunk++;
+        if (currChunk < chunks) workChunk();
+        else {
+          swal("everything saved!");
+          spinner.stop();
+        }
+      }
+    });
+  })();
 }
 
 
 function setHeadersFirstRow() {
-  var colHeaders = [];
-  var hotData = HOT.getData();
-  var firstRow = hotData[0];
-  var data = hotData.splice(1);
-  var newColumns = [];
-  var deleteCols = [];
+  var
+    colHeaders = [],
+    hotData = hot.getData(),
+    firstRow = hotData[0],
+    data = hotData.splice(1),
+    newColumns = [],
+    deleteCols = [],
+    colWidths = [];
 
   for (var i in firstRow) {
     var name = firstRow[i];
@@ -183,7 +196,6 @@ function setHeadersFirstRow() {
     } else deleteCols.push(i);
   }
 
-
   for (var j = 0; j < data.length; j++) {
     for (var c = 0; c < deleteCols.length; c++) {
       var delCol = deleteCols[c];
@@ -191,31 +203,30 @@ function setHeadersFirstRow() {
     }
   }
 
-  HOT.updateSettings({
+  hot.updateSettings({
     'colWidths': undefined
   });
 
-  HOT.updateSettings({
+  hot.updateSettings({
     'columns': newColumns,
     'colHeaders': colHeaders,
     'data': data,
   });
 
-  var colWidths = [];
+  columns = newColumns;
 
   for (var cw = 0; cw < colHeaders.length; cw++) {
-    var width = HOT.getColWidth(cw);
-    colWidths.push(width + 10);
+    var width = hot.getColWidth(cw);
+    colWidths.push(width + 30);
   }
 
-  HOT.updateSettings({
+  hot.updateSettings({
     'colWidths': colWidths
   });
 }
 
 
 function afterGetColHeader(col, TH) {
-  // console.log(col, TH);
   if (col == -1) return;
 
   var instance = this,
@@ -312,15 +323,15 @@ function buildButton() {
 
 function setColumnType(i, type, instance) {
 
-  var colHeaders = HOT.getColHeader();
+  var colHeaders = hot.getColHeader();
 
   columns[i].type = HH.typesMap[type];
   columns[i].jsType = type;
   // columns[i].data = colHeaders[i];
-  if (type == "Date") columns[i].dateFormat = 'DD-MMM-YYYY';
+  if (type == "date") columns[i].dateFormat = 'DD-MMM-YYYY';
 
 
-  var hotData = HOT.getData();
+  var hotData = hot.getData();
 
   for (var j = 0; j < hotData.length; j++) {
     var jtem = hotData[j];
@@ -328,16 +339,16 @@ function setColumnType(i, type, instance) {
     if ((cell === null) || (cell === "")) continue;
     switch (type) {
       case "Number":
-        HOT.setDataAtCell(j, i, parseInt(cell, 10));
+        hot.setDataAtCell(j, i, parseInt(cell, 10));
         break;
 
       case "Date":
         var formattedDate = moment(new Date(cell)).format('DD-MMM-YYYY');
-        HOT.setDataAtCell(j, i, formattedDate);
+        hot.setDataAtCell(j, i, formattedDate);
         break;
 
       case "Boolean":
-        HOT.setDataAtCell(j, i, getBool(cell));
+        hot.setDataAtCell(j, i, getBool(cell));
         break;
     }
   }
@@ -413,7 +424,7 @@ function loadFile(str, file) {
           });
         }
 
-      });
+      }).catch(function() {});
     }
   } else if (fileType == "json") {
 
@@ -429,6 +440,7 @@ function loadFile(str, file) {
   });
 }
 
+
 function workJson(json) {
 
   if (json.results) json = json.results; //imports from hosted parse
@@ -437,30 +449,24 @@ function workJson(json) {
     json = [json];
   }
 
-  var currData = HOT.getData();
+  var currData = hot.getData();
 
   var schema = HH.buildSchema(json);
-  // columns = schema.columns;
   json = HH.stringifyArrObj(json);
   var arrArr = HH.convArrObjArrArr(json);
 
-  HOT.updateSettings({
-    // 'columns': columns,
-    'colHeaders': schema.colHeaders,
-    'data': arrArr,
-  });
-
-  var colWidths = [];
+  var colNumHeaders = [];
 
   for (var c = 0; c < schema.colHeaders.length; c++) {
-    var width = HOT.getColWidth(c);
-    colWidths.push(width + 10);
+    colNumHeaders.push(c + 1);
   }
 
-  HOT.updateSettings({
-    'colWidths': colWidths
+  hot.updateSettings({
+    'colHeaders': colNumHeaders,
+    'data': arrArr,
   });
 }
+
 
 function convZipStr(buff) {
   var new_zip = new JSZip();
@@ -473,6 +479,7 @@ function convZipStr(buff) {
   };
   return o;
 }
+
 
 function to_json(workbook) {
   var result = {};
