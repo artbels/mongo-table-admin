@@ -1,6 +1,7 @@
 var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i;
+var reMongoId = /^[0-9a-f]{24}$/;
 
 var MH = module.exports = {};
 
@@ -61,7 +62,7 @@ MH.find = function(params) {
 MH.insert = function(params) {
   return new Promise(function(res, err) {
 
-    if (!params.db || !params.collection || !params.data) return err("!params.db || !params.collection || !params.data");
+    if (!params.db || !params.collection || !params.data || !params.data.length) return err("!params.db || !params.collection || !params.data");
 
     if (typeof params.data == "string") {
       try {
@@ -95,10 +96,75 @@ MH.insert = function(params) {
 
 
 MH.updateById = function(params) {
+
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.id || !params.update) return err("!params.db || !params.collection || !params.id || !params.update");
 
-    params.id = new ObjectID(params.id);
+    var objId;
+
+    if (reMongoId.test(params.id)) {
+      try {
+        objId = new ObjectID(params.id);
+      } catch (idErr) {
+        console.warn(idErr);
+      }
+    }
+
+    try {
+      params.update = JSON.parse(params.update);
+      for (var key in params.update) {
+        var item = params.update[key];
+        if (reJsStrData.test(item)) params.update[key] = new Date(item);
+      }
+    } catch (e) {
+      return err(e);
+    }
+
+    var updObj = {
+      "$set": params.update
+    };
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).updateOne({
+        _id: objId || params.id
+      }, updObj, function(e, r) {
+        if (e) return err(e);
+
+        if (Object.keys(r).length || !objId) {
+          res(r);
+          db.close();
+
+        } else {
+          db.collection(params.collection).updateOne({
+            _id: params.id
+          }, updObj, function(e, r) {
+            if (e) return err(e);
+
+            res(r);
+            db.close();
+          });
+        }
+      });
+    });
+  });
+};
+
+
+MH.removeById = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection || !params.id) return err("!params.db || !params.collection || !params.id");
+
+    var objId;
+
+    if (reMongoId.test(params.id)) {
+      try {
+        objId = new ObjectID(params.id);
+      } catch (idErr) {
+        console.warn(idErr);
+      }
+    }
 
     try {
       params.update = JSON.parse(params.update);
@@ -113,11 +179,39 @@ MH.updateById = function(params) {
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).updateOne({
-        _id: params.id
-      }, {
-        "$set": params.update
+      db.collection(params.collection).remove({
+        _id: objId || params.id
       }, function(e, r) {
+        if (e) return err(e);
+
+        if (Object.keys(r).length || !objId) {
+          res(r);
+          db.close();
+
+        } else {
+          db.collection(params.collection).remove({
+            _id: params.id
+          }, function(e, r) {
+            if (e) return err(e);
+
+            res(r);
+            db.close();
+          });
+        }
+      });
+    });
+  });
+};
+
+
+MH.dropCollection = function(params) {
+  return new Promise(function(res, err) {
+    if (!params.db || !params.collection) return err("!params.db || !params.collection");
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).drop(function(e, r) {
         if (e) return err(e);
 
         res(r);
@@ -128,18 +222,14 @@ MH.updateById = function(params) {
 };
 
 
-MH.removeById = function(params) {
+MH.dropDatabase = function(params) {
   return new Promise(function(res, err) {
-    if (!params.db || !params.collection || !params.id) return err("!params.db || !params.collection || !params.id");
-
-    params.id = new ObjectID(params.id);
+    if (!params.db) return err("!params.db");
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).remove({
-        _id: params.id
-      }, function(e, r) {
+      db.dropDatabase(function(e, r) {
         if (e) return err(e);
 
         res(r);
@@ -199,14 +289,16 @@ MH.rename = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.old || !params.new) return err("!params.db || !params.collection || !params.old || !params.new");
 
-    if (params.query && (typeof params.query == "string")) {
-      try {
-        params.query = JSON.parse(params.query);
-      } catch (e) {
-        params.query = {};
-        err(e);
+    if (params.query) {
+      if (typeof params.query == "string") {
+        try {
+          params.query = JSON.parse(params.query);
+        } catch (e) {
+          params.query = {};
+          err(e);
+        }
       }
-    }
+    } else params.query = {};
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -231,14 +323,16 @@ MH.unsetField = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
 
-    if (params.query && (typeof params.query == "string")) {
-      try {
-        params.query = JSON.parse(params.query);
-      } catch (e) {
-        params.query = {};
-        err(e);
+    if (params.query) {
+      if(typeof params.query == "string") {
+        try {
+          params.query = JSON.parse(params.query);
+        } catch (e) {
+          params.query = {};
+          err(e);
+        }
       }
-    }
+    } else params.query = {};
 
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
@@ -259,7 +353,7 @@ MH.unsetField = function(params) {
 };
 
 
-MH.listcollections = function(params) {
+MH.listCollections = function(params) {
   return new Promise(function(res, err) {
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);

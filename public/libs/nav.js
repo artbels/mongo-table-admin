@@ -5,7 +5,7 @@
 
   Nav.collections = function() {
     var dbPath = localStorage["input#db-path"];
-    $.post("/listcollections", {
+    $.post("/mongo/listcollections", {
       db: dbPath
     }, function(list) {
 
@@ -96,7 +96,7 @@
 
   Nav.dbs = function() {
     var dbPath = localStorage["input#db-path"];
-    $.post("/listdatabases", {
+    $.post("/mongo/listdatabases", {
       db: dbPath
     }, function(list) {
 

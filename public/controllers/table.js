@@ -8,7 +8,7 @@ getDataMongo(params);
 
 function getDataMongo(params) {
 
-  $.post("/find", params, function(arr) {
+  $.post("/mongo/find", params, function(arr) {
 
     if (arr.length >= 1000) {
       var limit = prompt("There are " + arr.length + " rows found. How much to load?", 1000);
@@ -34,7 +34,7 @@ function getDataMongo(params) {
           var swalNode = document.querySelector("#swal-div");
 
           UI.button({
-            innerHTML: "Find",
+            innerHTML: "Find matching",
             id: "find",
             className: "btn btn-primary",
             parent: swalNode,
@@ -66,7 +66,7 @@ function getDataMongo(params) {
               localStorage.queryCode = JSON.stringify(query);
               params.query = JSON.stringify(query);
 
-              $.post("/remove", params, function(r) {
+              $.post("/mongo/remove", params, function(r) {
                 if (r && r.ok && (r.ok == 1)) {
                   location.reload();
 
@@ -76,6 +76,16 @@ function getDataMongo(params) {
             } catch (e) {
               console.warn(e);
             }
+            swal.close();
+          });
+
+          UI.button({
+            innerHTML: "Cancel",
+            id: "cancel",
+            className: "btn btn-secondary",
+            parent: swalNode,
+
+          }, function() {
             swal.close();
           });
         }
@@ -231,7 +241,7 @@ function getDataMongo(params) {
           });
         }
 
-        $.post("/rename", params, function(r) {
+        $.post("/mongo/rename", params, function(r) {
           if (r && r.ok && (r.ok == 1)) {
             getDataMongo(params);
           } else statusNode.innerHTML = JSON.stringify(r);
@@ -275,7 +285,7 @@ function getDataMongo(params) {
           });
         }
 
-        $.post("/unsetfield", params, function(r) {
+        $.post("/mongo/unsetfield", params, function(r) {
           if (r && r.ok && (r.ok == 1)) {
             location.reload();
           } else statusNode.innerHTML = JSON.stringify(r);
@@ -356,7 +366,7 @@ function printTable(arr, params) {
         var newObj = chObj.new[newRowNum];
         params.data = JSON.stringify([newObj]);
 
-        $.post("/insert", params, function(r) {
+        $.post("/mongo/insert", params, function(r) {
           if (r && r.result && r.result.ok && (r.result.ok == 1)) {
 
             var newId = r.insertedIds[0];
@@ -386,7 +396,7 @@ function printTable(arr, params) {
         params.id = idArr[rowNum];
         params.update = JSON.stringify(update);
 
-        $.post("/updatebyid", params, function(r) {
+        $.post("/mongo/updatebyid", params, function(r) {
           if (r && r.ok && (r.ok == 1)) {
             statusNode.innerHTML = params.id + " updated";
 
@@ -409,7 +419,7 @@ function printTable(arr, params) {
     (function next() {
       params.id = idArr[rowNum];
 
-      $.post("/removebyid", params, function(r) {
+      $.post("/mongo/removebyid", params, function(r) {
         if (r && r.ok && (r.ok == 1)) {
           statusNode.innerHTML = params.id + " deleted";
 

@@ -3,13 +3,32 @@ var controlsNode = document.querySelector("#controls");
 var tableNode = document.querySelector("#table");
 var resultsNode = document.querySelector("#results");
 
-var typesMap = {
-  "String": "text",
-  "Number": "numeric",
-  "Boolean": "checkbox",
-  "Array": "text",
-  "Object": "text",
-  "Date": "date"
+var spinner = new Spinner({
+  length: 40,
+  width: 25,
+  radius: 65,
+  scale: 1.5,
+  color: "#606060",
+});
+
+var papaConfig = {
+  delimiter: "", // auto-detect
+  newline: "", // auto-detect
+  header: true,
+  dynamicTyping: true,
+  preview: 0,
+  encoding: "",
+  worker: false,
+  comments: false,
+  complete: function(r) {
+    workJson(r.data);
+  },
+  error: undefined,
+  download: false,
+  skipEmptyLines: true,
+  chunk: undefined,
+  fastMode: undefined,
+  beforeFirstChunk: undefined
 };
 
 var minSpareCols = 0;
@@ -22,11 +41,9 @@ var columns = [];
 for (var i = 0; i < startCols; i++) {
   columns.push({
     type: 'text',
-    jsType: "String"
+    jsType: "string"
   });
 }
-
-
 
 HOT = new Handsontable(tableNode, {
   startRows: startRows,
@@ -55,10 +72,10 @@ UI.button({
 }, setHeadersFirstRow);
 
 
-// UI.fileReader({
-//   parent: controlsNode,
-//   id: "load",
-// }, loadFile);
+UI.fileReader({
+  parent: controlsNode,
+  id: "load",
+}, loadFile); //todo: think how to start spinner. If do onchange, it changes deafult onchange
 
 
 UI.button({
@@ -69,7 +86,7 @@ UI.button({
 }, function() {
   var hotData = HOT.getData();
   var colHeaders = HOT.getColHeader();
-  var arr = convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders);
+  var arr = HH.convArrArrToArrObj(hotData, minSpareRows, colHeaders, columns);
   saveDataMongo(arr);
 });
 
@@ -118,49 +135,87 @@ function saveDataMongo(arr) {
           // textAlign: "center"
         }
       }, function() {
-        var params = {
-          db: document.querySelector("#db-path").value,
-          collection: document.querySelector("#collection").value,
-          data: JSON.stringify(arr)
-        };
-        $.post("/insert", params, function(r) {
-          console.log(r);
-          if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-            swal("everything saved!");
-          }
-        });
+
+        var chunkSize = 100;
+        var chunks = Math.ceil(arr.length / chunkSize);
+        var currChunk = 0;
+
+        (function workChunk() {
+          var start = currChunk * chunkSize;
+          var currArr = arr.slice(start, chunkSize * (currChunk + 1));
+
+          var params = {
+            db: document.querySelector("#db-path").value,
+            collection: document.querySelector("#collection").value,
+            data: JSON.stringify(currArr)
+          };
+          $.post("/mongo/insert", params, function(r) {
+            if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+
+              currChunk++;
+              if (currChunk < chunks) workChunk();
+              else {
+                swal("everything saved!");
+              }
+            }
+          });
+        })();
       });
     }
   });
 }
 
+
 function setHeadersFirstRow() {
-  var colHeaders = HOT.getColHeader();
+  var colHeaders = [];
   var hotData = HOT.getData();
   var firstRow = hotData[0];
   var data = hotData.splice(1);
+  var newColumns = [];
+  var deleteCols = [];
 
-  for (var i = 0; i < firstRow.length; i++) {
+  for (var i in firstRow) {
     var name = firstRow[i];
     if (name) {
-      colHeaders[i] = name;
-    } else {
-      colLeft = firstRow.length - i;
-      // colHeaders.splice(i, colLeft);
-      columns.splice(i, colLeft);
-      break;
+      colHeaders.push(name);
+      newColumns.push(columns[i]);
+
+    } else deleteCols.push(i);
+  }
+
+
+  for (var j = 0; j < data.length; j++) {
+    for (var c = 0; c < deleteCols.length; c++) {
+      var delCol = deleteCols[c];
+      data[j].splice(delCol, 1);
     }
   }
 
   HOT.updateSettings({
+    'colWidths': undefined
+  });
+
+  HOT.updateSettings({
+    'columns': newColumns,
     'colHeaders': colHeaders,
-    'columns': columns,
     'data': data,
+  });
+
+  var colWidths = [];
+
+  for (var cw = 0; cw < colHeaders.length; cw++) {
+    var width = HOT.getColWidth(cw);
+    colWidths.push(width + 10);
+  }
+
+  HOT.updateSettings({
+    'colWidths': colWidths
   });
 }
 
 
 function afterGetColHeader(col, TH) {
+  // console.log(col, TH);
   if (col == -1) return;
 
   var instance = this,
@@ -314,74 +369,120 @@ function bindDumpButton() {
       var name = element.getAttribute('data-dump');
       var instance = element.getAttribute('data-instance');
       var hot = window[instance];
-      console.log('data of ' + name, hot.getData());
+      // console.log('data of ' + name, hot.getData());
     }
   });
 }
 
 
-function convArrOfArrToArrOfObj(hotData, minSpareRows, colHeaders) {
-  var arr = [];
+function loadFile(str, file) {
 
-  for (var i = 0; i < hotData.length - minSpareRows; i++) {
-    var row = hotData[i];
-    var o = {};
-    var allRowsEmpty = true;
-    for (var j = 0; j < row.length; j++) {
-      var cell = row[j];
-      var prop = colHeaders[j];
-      var type = columns[j].jsType;
+  var fileType = file.name.split(".").pop();
 
-      if ((typeof cell === "undefined") || (cell === null)) continue;
-      allRowsEmpty = false;
-
-      switch (type) {
-        case "Number":
-          var parseIntRes = parseInt(cell, 10);
-          if (isNaN(parseIntRes)) cell = undefined;
-          else cell = parseIntRes;
-          break;
-
-        case "Boolean":
-          cell = Boolean(cell);
-          break;
-
-        case "Array":
-          try {
-            cell = JSON.parse(cell);
-          } catch (e) {
-            cell = cell.split(/,|;|\t/);
-          }
-          break;
-
-        case "Object":
-          try {
-            cell = JSON.parse(cell);
-          } catch (e) {
-            console.log(e);
-          }
-          break;
-
-        case "Date":
-          if (cell) {
-            try {
-              cell = new Date(cell);
-            } catch (e) {
-              console.log(e);
-            }
-          }
-          break;
-      }
-
-      o[prop] = cell;
-    }
-    if (!allRowsEmpty) arr.push(o);
+  if (fileType == "zip") {
+    var zipCont = convZipStr(str);
+    fileType = zipCont.name.split(".").pop();
+    str = zipCont.text;
   }
-  return arr;
+
+  if (fileType == "csv") {
+    return Papa.parse(str, papaConfig);
+  } else if (['xls', 'xlsx'].indexOf(fileType) != -1) {
+    var workbook = XLSX.read(str, {
+      type: 'binary'
+    });
+    var workbookJson = to_json(workbook);
+    var sheetNames = Object.keys(workbookJson);
+
+    if (sheetNames.length == 1) return workJson(workbookJson[sheetNames[0]]);
+    else {
+
+      var html = '<div id="worksheet-select"></div>';
+      swal({
+        title: "Choose Worksheet",
+        html: html,
+        showConfirmButton: false,
+        onOpen: function() {
+          var swalDivSel = "#worksheet-select";
+
+          UI.select(sheetNames, {
+            parent: document.querySelector(swalDivSel)
+          }, function(sheet) {
+            swal.closeModal();
+            return workJson(workbookJson[sheet]);
+          });
+        }
+
+      });
+    }
+  } else if (fileType == "json") {
+
+    try {
+      json = JSON.parse(str);
+      workJson(json);
+    } catch (e) {
+      swal(JSON.stringify(e));
+    }
+
+  } else swal("file is not a json, csv, xls, xlsx or those zipped").then(function() {
+    location.reload();
+  });
 }
 
+function workJson(json) {
 
+  if (json.results) json = json.results; //imports from hosted parse
 
-function loadFile(input) {
-  console.log(input);
+  if (json.constructor == Object) {
+    json = [json];
+  }
+
+  var currData = HOT.getData();
+
+  var schema = HH.buildSchema(json);
+  // columns = schema.columns;
+  json = HH.stringifyArrObj(json);
+  var arrArr = HH.convArrObjArrArr(json);
+
+  HOT.updateSettings({
+    // 'columns': columns,
+    'colHeaders': schema.colHeaders,
+    'data': arrArr,
+  });
+
+  var colWidths = [];
+
+  for (var c = 0; c < schema.colHeaders.length; c++) {
+    var width = HOT.getColWidth(c);
+    colWidths.push(width + 10);
+  }
+
+  HOT.updateSettings({
+    'colWidths': colWidths
+  });
+}
+
+function convZipStr(buff) {
+  var new_zip = new JSZip();
+  new_zip.load(buff);
+  var fileArr = Object.keys(new_zip.files);
+  var str = new_zip.file(fileArr[0]).asText();
+  var o = {
+    text: str,
+    name: fileArr[0]
+  };
+  return o;
+}
+
+function to_json(workbook) {
+  var result = {};
+  workbook.SheetNames.forEach(function(sheetName) {
+    var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName], {
+      header: "A"
+    });
+    if (roa.length > 0) {
+      result[sheetName] = roa;
+    }
+  });
+  return result;
 }

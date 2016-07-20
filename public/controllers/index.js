@@ -94,7 +94,7 @@ function formFindMongo(type) {
 
 
 function getDataMongo(params) {
-  $.post("/find", params, function(arr) {
+  $.post("/mongo/mongo/find", params, function(arr) {
 
     console.log(arr);
 
@@ -258,7 +258,7 @@ function printTable(arr, params) {
             collection: localStorage["input#collection"],
             data: JSON.stringify([o])
           };
-          $.post("/insert", saveParams, function(r) {
+          $.post("/mongo/insert", saveParams, function(r) {
               console.log(r);
               cb();
             if (r && r.result && r.result.ok && (r.result.ok == 1)) {
@@ -274,7 +274,7 @@ function printTable(arr, params) {
           params.update = JSON.stringify({
             "$set": update
           });
-          $.post("/updatebyid", params, function(obj) {
+          $.post("/mongo/updatebyid", params, function(obj) {
             console.log(obj);
             cb();
           });

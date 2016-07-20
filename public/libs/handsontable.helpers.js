@@ -168,7 +168,7 @@
 
 
 
-  HH.convArrArrToArrObj = function(hotData, minSpareRows, colHeaders) {
+  HH.convArrArrToArrObj = function(hotData, minSpareRows, colHeaders, columns) {
     var arr = [];
 
     for (var i = 0; i < hotData.length - minSpareRows; i++) {
@@ -184,17 +184,17 @@
         allRowsEmpty = false;
 
         switch (type) {
-          case "Number":
+          case "number":
             var parseIntRes = parseInt(cell, 10);
             if (isNaN(parseIntRes)) cell = undefined;
             else cell = parseIntRes;
             break;
 
-          case "Boolean":
+          case "boolean":
             cell = Boolean(cell);
             break;
 
-          case "Array":
+          case "array":
             try {
               cell = JSON.parse(cell);
             } catch (e) {
@@ -202,7 +202,7 @@
             }
             break;
 
-          case "Object":
+          case "object":
             try {
               cell = JSON.parse(cell);
             } catch (e) {
@@ -210,7 +210,7 @@
             }
             break;
 
-          case "Date":
+          case "date":
             if (cell) {
               try {
                 cell = new Date(cell);
@@ -261,6 +261,32 @@
       }
     }
     return arr;
+  };
+
+
+  HH.convArrObjArrArr = function(arr) {
+    var uniqColumns = {};
+    var finArr = []; 
+
+    for (var i = 0; i < arr.length; i++) {
+      for (var key in arr[i]) {
+        uniqColumns[key] = true;
+      }
+    }
+
+    var columns = Object.keys(uniqColumns);
+    finArr.push(columns);
+
+    for (var j = 0; j < arr.length; j++) {
+      var row = arr[j];
+      var rowArr = [];
+      for (var col in uniqColumns) {
+        var cell = row[col];
+        rowArr.push(cell);
+      }
+      finArr.push(rowArr);
+    }
+    return finArr;
   };
 
 })();

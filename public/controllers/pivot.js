@@ -4,7 +4,7 @@ getDataMongo(params);
 
 function getDataMongo(params) {
 
-  $.post("/find", params, function(arr) {
+  $.post("/mongo/find", params, function(arr) {
 
     if(arr.length >= 1000) {
       var limit = prompt("There are " + arr.length + " rows found. How much to load?", 1000); 
