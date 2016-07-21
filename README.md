@@ -53,7 +53,7 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [+] router - collection in url, type of view, simple filters 
 - [+] set data type on save
 - [+] upload data from json, csv, xls, xlsx and those zipped
-- [ ] test
+- [ ] test, test, test
 
 ### contribution & help
 
