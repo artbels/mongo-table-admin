@@ -57,7 +57,7 @@ alt="add rows" width="480" height="270" border="10" /></a>
 
 ### contribution & help
 
-* be free to fork [add rows (github.com/artbels/mongo-table-admin)](https://github.com/artbels/mongo-table-admin). Ex. configure basic auth.
+* be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. configure basic auth.
 * pull requests are welcome - the code is not great yet, handsontable helper functions need refactoring.
 * found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues).
-* don't be shy to star my first open source experiment - I promise to smile every time I see it ))
+* **don't be shy to star my first open source experiment - I promise to smile every time I see it ))**
