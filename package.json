@@ -9,7 +9,7 @@
     "handsontable",
     "import data to mongo"
   ],
-  "version": "0.9.12",
+  "version": "0.9.13",
   "author": {
     "name": "Artem Bilodid",
     "email": "artbels@gmail.com",
