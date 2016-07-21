@@ -306,7 +306,7 @@ function getDataMongo(params) {
 
     statusNode = document.querySelector("#status-span");
 
-    updateStatusDelayed("Autosaving changes");
+    updateStatusDelayed("Autosaving changes", 5000);
 
     printTable(arr, params);
   });

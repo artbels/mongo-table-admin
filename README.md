@@ -17,6 +17,7 @@ Rememeber to always back up important data. Everybody can sometimes unintentiona
 * Browse, analyze documents using Pivottable - group by rows, columns. Build graphs, export small datasets.
 * Inline edit using Handsontable. Add new rows. Delete rows. Add or modify columns. Filter collection by regular query. 
 * Create new collection copy-pasting data from any source. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
+* Upload data from xls, xlsx, csv, json, and those zipped.
 
 ### installation
 git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin  
