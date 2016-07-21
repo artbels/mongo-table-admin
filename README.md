@@ -19,7 +19,7 @@ Rememeber to always back up important data. Everybody can sometimes unintentiona
 * Create new collection copy-pasting data from any source. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
 
 ### installation
-git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin
+git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin  
 npm install  
 npm start  
 [localhost:12369](http://localhost:12369)
