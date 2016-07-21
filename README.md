@@ -46,13 +46,13 @@ alt="add rows" width="480" height="270" border="10" /></a>
 alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
-- [+] build query in modal to save space
-- [+] display autosave status
-- [+] choose collection from list
-- [+] show warning if too many documents in collection - choose how many to show or limit by query
-- [+] router - collection in url, type of view, simple filters 
-- [+] set data type on save
-- [+] upload data from json, csv, xls, xlsx and those zipped
+- [x] build query in modal to save space
+- [x] display autosave status
+- [x] choose collection from list
+- [x] show warning if too many documents in collection - choose how many to show or limit by query
+- [x] router - collection in url, type of view, simple filters 
+- [x] set data type on save
+- [x] upload data from json, csv, xls, xlsx and those zipped
 - [ ] test, test, test
 
 ### contribution & help
