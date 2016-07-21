@@ -1,43 +1,45 @@
 # mongo-table-admin (MTA)
 
-Admin interface for mongo, to work with documents as table rows. Integrates Handsontables, Pivottable. Handsontable is a great inline edit tool. Pivottable is data discovery and analisys tool.
+Admin interface for mongo. Work with documents as table rows. Integrates Handsontable - great inline edit tool, and Pivottable - data discovery and analisys tool.
 
 ### why
 
-For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clasters etc. Thats what pivot is about. And second thing, I used to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table or Google spreadsheet.
+For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clusters etc. Thats what pivot is about. And second thing, I used to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table or Google spreadsheet.
 
 If you are looking for a full featured mongo admin, please check:
 * [admin-mongo](https://www.npmjs.com/package/admin-mongo)
 * [mongoclient](http://www.mongoclient.com/)
 
-Caution! App is still under heavy development. Don't use it on data you did not backed up.
+Rememeber to always back up important data. Everybody can sometimes unintentionally break something.
 
 ### features
 
-* Browse data using Pivottable
-* Inline edit using Handsontable
-* Create new table using copy-paste data from regular table. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
+* Browse, analyze documents using Pivottable - group by rows, columns. Build graphs, export small datasets.
+* Inline edit using Handsontable. Add new rows. Delete rows. Add or modify columns. Filter collection by regular query. 
+* Create new collection copy-pasting data from any source. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
 
 ### installation
+git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin
 npm install  
 npm start  
 [localhost:12369](http://localhost:12369)
 
+
 ### usage
 
-[add rows (localhost:12369/create)](localhost:12369/create) example on youtube:
+[add rows (localhost:12369/create)](http://localhost:12369/create) example on youtube:
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=_vUlAHl9uUU
 " target="_blank"><img src="http://img.youtube.com/vi/_vUlAHl9uUU/0.jpg" 
 alt="add rows" width="480" height="270" border="10" /></a>
 
-[browse data (localhost:12369)](localhost:12369) example on youtube:
+[browse data (localhost:12369)](http://localhost:12369) example on youtube:
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=eg8KG5Xw3Rc
 " target="_blank"><img src="http://img.youtube.com/vi/eg8KG5Xw3Rc/0.jpg" 
 alt="add rows" width="480" height="270" border="10" /></a>
 
-[inline edit data (localhost:12369)](localhost:12369) example on youtube:
+[inline edit data (localhost:12369)](http://localhost:12369) example on youtube:
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=IkbTDQo2VwM
 " target="_blank"><img src="http://img.youtube.com/vi/IkbTDQo2VwM/0.jpg" 
@@ -52,3 +54,10 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [+] set data type on save
 - [+] upload data from json, csv, xls, xlsx and those zipped
 - [ ] test
+
+### contribution & help
+
+* be free to fork [add rows (github.com/artbels/mongo-table-admin)](https://github.com/artbels/mongo-table-admin). Ex. configure basic auth.
+* pull requests are welcome - the code is not great yet, handsontable helper functions need refactoring.
+* found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues).
+* don't be shy to star my first open source experiment - I promise to smile every time I see it ))
