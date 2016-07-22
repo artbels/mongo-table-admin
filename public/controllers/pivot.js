@@ -1,4 +1,4 @@
-var params = Nav.getCollectionFromUrl();
+var params = Controls.getCollectionFromUrl();
 var controlNode = document.querySelector("#control");
 
 var spinner = new Spinner({
@@ -28,13 +28,11 @@ function getDataMongo(params) {
   $.post("/mongo/find", params, function(arr) {
     if ((typeof spinner != "undefined") && spinner) spinner.stop();
 
-    Buttons.buildQuery(controlNode, params);
+    Controls.buildQuery(controlNode, params);
 
-    Buttons.resetQuery(controlNode, params);
+    Controls.resetQuery(controlNode, params);
 
-    Buttons.renameField(controlNode, params);
-
-    Buttons.deleteField(controlNode, params);
+    Controls.dropCollection(controlNode);
 
     printPivot(arr);
   });

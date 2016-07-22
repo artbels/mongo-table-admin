@@ -1,4 +1,4 @@
-var params = Nav.getCollectionFromUrl(); //todo: create clone of params on requests?
+var params = Controls.getCollectionFromUrl(); //todo: create clone of params on requests?
 localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
 params.query = localStorage["query" + params.db + params.collection];
 var controlNode = document.querySelector("#control");
@@ -29,104 +29,19 @@ function countDataMongo(params) {
 function getDataMongo(params) {
 
   $.post("/mongo/find", params, function(arr) {
+
     if ((typeof spinner != "undefined") && spinner) spinner.stop();
 
-    Buttons.buildQuery(controlNode, params);
+    printTable(arr, params);
 
-    Buttons.resetQuery(controlNode, params);
+    Controls.buildQuery(controlNode, params);
 
+    Controls.resetQuery(controlNode, params);
 
-    UI.button({
-      innerHTML: "Add field",
-      id: "add-column",
-      className: "",
-      parent: controlNode,
-    }, function() {
-      swal({
-        title: "Add column",
-        html: "<div id='swal-div' align='center'></div>",
-        showCancelButton: true,
-        onOpen: function(r) {
-          var swalNode = document.querySelector("#swal-div");
-
-          UI.input({
-            placeholder: "Field name",
-            id: "field-name",
-            className: "",
-            parent: swalNode,
-            value: "",
-            style: {
-              width: "180px",
-              textAlign: "center"
-            }
-          });
-
-          document.querySelector("#field-name").onkeyup = checkFieldExist;
-          document.querySelector("#field-name").onchange = checkFieldExist;
-
-          function checkFieldExist() {
-            var fieldName = document.querySelector("#field-name").value;
-            if (colHeaders.indexOf(fieldName) != -1) {
-              swal.showValidationError(fieldName + " is already exists");
-              swal.disableButtons();
-            } else {
-              swal.resetValidationError();
-              swal.enableButtons();
-            }
-          }
-
-          UI.br({
-            id: "add-column-span",
-            parent: swalNode
-          });
-
-          UI.select(Object.keys(HH.typesMap), {
-            placeholder: "Field type",
-            id: "field-type",
-            parent: swalNode
-          }, function(jsType) {});
-
-          document.querySelector("#field-typeSelect").value = "string";
-        }
-      }).then(function() {
-        var propNode = document.querySelector("#field-name");
-        var jsTypeNode = document.querySelector("#field-typeSelect");
-
-        if (!propNode || !propNode.value) {
-          return swal({
-            type: "warning",
-            title: "no field name"
-          });
-        }
-
-        if (colHeaders.indexOf(propNode.value) != -1) {
-          return swal({
-            type: "warning",
-            title: propNode.value + " already exists"
-          });
-        }
-
-        var col = HH.setColType(propNode.value, jsTypeNode.value || "string");
-
-        columns.push(col);
-        colHeaders.push(col.data);
-
-        hot.updateSettings({
-          colHeaders: colHeaders,
-          columns: columns
-        });
-      }).catch(function() {});
-    });
-
-
-
-    Buttons.renameField(controlNode, params);
-
-    Buttons.deleteField(controlNode, params);
-
+    Controls.otherActions(controlNode, params, columns, hot);
 
     UI.span({
-      innerHTML: arr.length + " rows found",
+      innerHTML: (arr.length - 1) + " rows found",
       id: "status-span",
       parent: controlNode,
       style: {
@@ -138,8 +53,6 @@ function getDataMongo(params) {
     statusNode = document.querySelector("#status-span");
 
     updateStatusDelayed("Autosaving changes", 5000);
-
-    printTable(arr, params);
   });
 }
 

@@ -354,12 +354,27 @@ MH.listCollections = function(params) {
 };
 
 
-MH.stats = function(params) {
+MH.dbStats = function(params) {
   return new Promise(function(res, err) {
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
       db.stats(function(e, stats) {
+        if (e) return err(e);
+
+        res(stats);
+        db.close();
+      });
+    });
+  });
+};
+
+MH.collectionStats = function(params) {
+  return new Promise(function(res, err) {
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).stats(function(e, stats) {
         if (e) return err(e);
 
         res(stats);

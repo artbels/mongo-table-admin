@@ -30,18 +30,18 @@
   var connNode = document.querySelector("#connection");
   connNode.onclick = function () {
     var dbPath = localStorage["input#db-path"];
-    if(!dbPath) return Nav.dbPath();
+    if(!dbPath) return Swals.dbPath();
 
-    Nav.dbs();
+    Controls.dbs();
   };
 
   var listNode = document.querySelector("#collections");
   listNode.onclick = function() {
 
     var dbPath = localStorage["input#db-path"];
-    if(!dbPath) return Nav.dbPath();
+    if(!dbPath) return Swals.dbPath();
 
-    Nav.collections();              
+    Controls.collections();              
   };
 
   var switchLiNode = document.querySelector("#switch-li");
@@ -54,7 +54,7 @@
         id: "switch-to-table",
         parent: switchLiNode
       }, function () {
-        Nav.changeView("table");
+        Controls.changeView("table");
       });
     } else {
       UI.button({
@@ -62,7 +62,7 @@
         id: "switch-to-pivot",
         parent: switchLiNode
       }, function () {
-        Nav.changeView("pivot");
+        Controls.changeView("pivot");
       });
     }
   }
