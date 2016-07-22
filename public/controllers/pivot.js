@@ -1,56 +1,40 @@
 var params = Nav.getCollectionFromUrl();
+var controlNode = document.querySelector("#control");
 
-getDataMongo(params);
+var spinner = new Spinner({
+  length: 25,
+  width: 15,
+  radius: 30,
+  scale: 1.5,
+  color: "#606060",
+});
+
+countDataMongo(params);
+
+function countDataMongo(params) {
+  $.post("/mongo/count", params, function(num) {
+
+    if (num < 1000) getDataMongo(params);
+    else {
+      Swals.tooMuchRows(controlNode, params, num);
+    }
+  });
+}
+
+
 
 function getDataMongo(params) {
 
   $.post("/mongo/find", params, function(arr) {
+    if ((typeof spinner != "undefined") && spinner) spinner.stop();
 
-    if(arr.length >= 1000) {
-      var limit = prompt("There are " + arr.length + " rows found. How much to load?", 1000); 
-      if(limit) arr = arr.slice(0, Number(limit));
-    }
+    Buttons.buildQuery(controlNode, params);
 
-    UI.button({
-      innerHTML: "Build query",
-      id: "build-query",
-      className: "",
-      parent: document.querySelector("#control"),
+    Buttons.resetQuery(controlNode, params);
 
-    }, function() {
-      var queryNode;
-      swal({
-        title: "Valid JSON please",
-        html: "<textarea  id='query' cols='60' rows='12' style='font-family: monospace; font-size: 12px'></textarea><div id='swal-div'></div>",
-        onOpen: function() {
-          queryNode = document.querySelector("#query");
-          queryNode.value = localStorage.queryCode || "{}";
-        }
+    Buttons.renameField(controlNode, params);
 
-      }).then(function() {
-        queryNode = document.querySelector("#query");
-        var query = {};
-        try {
-          query = JSON.parse(queryNode.value);
-          localStorage.queryCode = JSON.stringify(query);
-          params.query = JSON.stringify(query);
-          getDataMongo(params);
-        } catch (e) {
-          console.warn(e);
-        }
-      });
-    });
-
-    UI.button({
-      innerHTML: "Reset query",
-      id: "reset-query",
-      className: "",
-      parent: document.querySelector("#control"),
-    }, function() {
-      localStorage.queryCode = "{}";
-      params.query = "{}";
-      getDataMongo(params);
-    });
+    Buttons.deleteField(controlNode, params);
 
     printPivot(arr);
   });
@@ -64,16 +48,16 @@ function printPivot(arr) {
 
   arr = normalizeArrayOfObjects(arr);
 
-  var rows = [];
+  // var rows = [];
 
-  for (var key in arr[0]) {
-    if(servProps.indexOf(key) == -1) {
-      rows.push(key);
-    }
+  // for (var key in arr[0]) {
+  //   if (servProps.indexOf(key) == -1) {
+  //     rows.push(key);
+  //   }
 
-    if(rows.length == 3) break; 
+  //   if (rows.length == 3) break;
 
-  }
+  // }
 
   var renderers = $.extend(
     $.pivotUtilities.renderers,
@@ -83,7 +67,7 @@ function printPivot(arr) {
 
   $("#output").pivotUI(arr, {
     renderers: renderers,
-    rows: rows,
+    // rows: rows,
     // cols: cols,
     // vals: ["value"],
     // rendererName: "Table",
@@ -121,8 +105,8 @@ function normalizeArrayOfObjects(arr, params) {
 
       cell = oneObj[columns[l]];
 
-      if(cell === null) cell = "null";
-      else if(cell === undefined) cell = "undefined";
+      if (cell === null) cell = "null";
+      else if (cell === undefined) cell = "undefined";
       else if (typeof cell == "object") cell = JSON.stringify(cell);
       else if (typeof cell == "boolean") cell = JSON.stringify(cell);
 

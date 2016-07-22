@@ -45,10 +45,13 @@ MH.find = function(params) {
       }
     }
 
+    if(params.limit) params.limit = parseInt(params.limit, 10);
+    else params.limit = 0;
+
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).find(params.query).toArray(function(e, docs) {
+      db.collection(params.collection).find(params.query).limit(params.limit).toArray(function(e, docs) {
         if (e) return err(e);
 
         res(docs);

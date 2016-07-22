@@ -8,32 +8,20 @@
       </button>
       <a class="navbar-brand" href="/">Mongo Table Admin</a>
     </div>
-    <div class="collapse navbar-collapse navbar-right">
+
+    <div class="collapse navbar-collapse navbar-left" id="navbar-left">
       <ul class="nav navbar-nav">
+        <li><a href='/create'>Create Table</a></li>
+      </ul>
+    </div>
 
-<!--         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href='/table'>Table inline edit</a></li>
-            <li><a href='/pivot'>Pivot table</a></li>
-          </ul>
-        </li>   -->   
-
-        <li><a href='#' id="table-link">Table</a></li>
-        <li><a href='#' id="pivot-link">Pivot</a></li>
-
-        <li><a href='/create'>Create</a></li>
-
-        <li><a href='#' id="list">List</a>
-        </li>
-
+    <div class="collapse navbar-collapse navbar-right" id="navbar-right">
+      <ul class="nav navbar-nav">
+        <li id="switch-li"></li>
+        <li><button id="collections" style="margin:10px;" class="btn btn-default">Collections</button></li>
+        <li><button id="connection" style="margin:10px;" class="btn btn-default">Database</button></li>        
       </ul>
 
-      <ul class="nav navbar-nav">
-        <li><a href='#' id="connection">DB</a>
-
-        </li>
-      </ul>
     </div>
   </div>
 </div>
@@ -47,7 +35,7 @@
     Nav.dbs();
   };
 
-  var listNode = document.querySelector("#list");
+  var listNode = document.querySelector("#collections");
   listNode.onclick = function() {
 
     var dbPath = localStorage["input#db-path"];
@@ -56,22 +44,27 @@
     Nav.collections();              
   };
 
-  var tableNode = document.querySelector("#table-link");
-  tableNode.onclick = function () {
-    var newUrl = Nav.changeView("table");
+  var switchLiNode = document.querySelector("#switch-li");
+  var currView = window.location.href.split(/\//g).pop();
 
-    if(newUrl != window.location.href) {
-      window.location.href = Nav.changeView("table");
-    } else Nav.collections();
-    
-  };
+  if(["pivot", "table"].indexOf(currView) != -1) {
+    if(currView == "pivot") {
+      UI.button({
+        innerHTML: "Switch to table",
+        id: "switch-to-table",
+        parent: switchLiNode
+      }, function () {
+        Nav.changeView("table");
+      });
+    } else {
+      UI.button({
+        innerHTML: "Switch to pivot",
+        id: "switch-to-pivot",
+        parent: switchLiNode
+      }, function () {
+        Nav.changeView("pivot");
+      });
+    }
+  }
 
-  var pivotNode = document.querySelector("#pivot-link");
-  pivotNode.onclick = function () {
-    var newUrl = Nav.changeView("pivot");
-
-    if(newUrl != window.location.href) {
-      window.location.href = Nav.changeView("pivot");
-    } else Nav.collections();
-  };
 </script>

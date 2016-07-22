@@ -164,7 +164,7 @@
     var view = pathArr[3];
     var newPath = window.location.href.replace(view, newView);
 
-    return newPath;
+    window.location.href = newPath;
   };
 
 

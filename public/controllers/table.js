@@ -1,114 +1,39 @@
 var params = Nav.getCollectionFromUrl(); //todo: create clone of params on requests?
 localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
-  params.query = localStorage["query" + params.db + params.collection];
+params.query = localStorage["query" + params.db + params.collection];
 var controlNode = document.querySelector("#control");
 
-
+var spinner = new Spinner({
+  length: 25,
+  width: 15,
+  radius: 30,
+  scale: 1.5,
+  color: "#606060",
+});
 
 var statusNode;
 var hot, columns, colHeaders, idArr, minSpareRows = 1; //todo: group in one object?
 
-getDataMongo(params);
+countDataMongo(params);
+
+function countDataMongo(params) {
+  $.post("/mongo/count", params, function(num) {
+
+    if (num < 1000) getDataMongo(params);
+    else {
+      Swals.tooMuchRows(controlNode, params, num);
+    }
+  });
+}
 
 function getDataMongo(params) {
 
   $.post("/mongo/find", params, function(arr) {
+    if ((typeof spinner != "undefined") && spinner) spinner.stop();
 
-    if (arr.length >= 1000) {
-      var limit = prompt("There are " + arr.length + " rows found. How much to load?", 1000);
-      if (limit) arr = arr.slice(0, Number(limit));
-    }
+    Buttons.buildQuery(controlNode, params);
 
-    UI.button({
-      innerHTML: "Build query",
-      id: "build-query",
-      className: "",
-      parent: controlNode,
-
-    }, function() {
-      var queryNode;
-      swal({
-        title: "Valid JSON please",
-        showCancelButton: false,
-        showConfirmButton: false,
-        html: "<textarea  id='query' cols='60' rows='12' style='font-family: monospace; font-size: 12px'></textarea><div id='swal-div'></div>",
-        onOpen: function() {
-          queryNode = document.querySelector("#query");
-          queryNode.value = localStorage["query" + params.db + params.collection];
-          var swalNode = document.querySelector("#swal-div");
-
-          UI.button({
-            innerHTML: "Find matching",
-            id: "find",
-            className: "btn btn-primary",
-            parent: swalNode,
-
-          }, function() {
-            var query = {};
-            try {
-              query = JSON.parse(queryNode.value);
-              localStorage["query" + params.db + params.collection] = JSON.stringify(query);
-              params.query = JSON.stringify(query);
-              getDataMongo(params);
-            } catch (e) {
-              console.warn(e);
-            }
-            swal.close();
-          });
-
-          UI.button({
-            innerHTML: "Remove",
-            id: "remove",
-            className: "btn btn-danger",
-            parent: swalNode,
-
-          }, function() {
-
-            var query = {};
-            try {
-              query = JSON.parse(queryNode.value);
-              localStorage["query" + params.db + params.collection] = JSON.stringify(query);
-              params.query = JSON.stringify(query);
-
-              $.post("/mongo/remove", params, function(r) {
-                if (r && r.ok && (r.ok == 1)) {
-                  location.reload();
-
-                } else statusNode.innerHTML = JSON.stringify(r);
-              });
-
-            } catch (e) {
-              console.warn(e);
-            }
-            swal.close();
-          });
-
-          UI.button({
-            innerHTML: "Cancel",
-            id: "cancel",
-            className: "btn btn-secondary",
-            parent: swalNode,
-
-          }, function() {
-            swal.close();
-          });
-        }
-
-      }).then(function() {}).catch(function() {});
-    });
-
-
-    if (localStorage["query" + params.db + params.collection] != "{}") {
-      UI.button({
-        innerHTML: "Reset query",
-        id: "reset-query",
-        className: "",
-        parent: controlNode,
-      }, function() {
-        localStorage["query" + params.db + params.collection] = "{}";
-        location.reload();
-      });
-    }
+    Buttons.resetQuery(controlNode, params);
 
 
     UI.button({
@@ -194,109 +119,10 @@ function getDataMongo(params) {
     });
 
 
-    UI.button({
-      innerHTML: "Rename field",
-      id: "rename-field",
-      className: "",
-      parent: controlNode,
-    }, function() {
-      swal({
-        title: "Rename field",
-        html: "<div id='swal-div' align='center'></div>",
-        showCancelButton: true,
-        onOpen: function(r) {
-          var swalNode = document.querySelector("#swal-div");
 
-          var noIdColHeaders = colHeaders.filter(function(r) {
-            if (r != "_id") return r;
-          });
+    Buttons.renameField(controlNode, params);
 
-          UI.select(noIdColHeaders, {
-            id: "field-to-rename",
-            parent: swalNode
-          }, function(jsType) {});
-
-          // document.querySelector("#field-to-renameSelect").value = noIdColHeaders.pop();
-
-          UI.br({
-            id: "field-to-rename-br",
-            parent: swalNode
-          });
-
-          UI.input({
-            placeholder: "New name",
-            id: "new-name",
-            value: "",
-            className: "",
-            parent: swalNode,
-            style: {
-              width: "180px",
-              textAlign: "center"
-            }
-          });
-        }
-      }).then(function() {
-        params.old = document.querySelector("#field-to-renameSelect").value;
-        params.new = document.querySelector("#new-name").value;
-
-        if (!params.old || !params.new) {
-          return swal({
-            type: "warning",
-            title: "no new or old"
-          });
-        }
-
-        $.post("/mongo/rename", params, function(r) {
-          if (r && r.ok && (r.ok == 1)) {
-            getDataMongo(params);
-          } else statusNode.innerHTML = JSON.stringify(r);
-        });
-      }).catch(function() {});
-    });
-
-
-    UI.button({
-      innerHTML: "Delete field",
-      id: "delete-field",
-      className: "",
-      parent: controlNode,
-    }, function() {
-      swal({
-        title: "Delete field",
-        showCancelButton: true,
-        html: "<div id='swal-div' align='center'></div>",
-        onOpen: function(r) {
-          var swalNode = document.querySelector("#swal-div");
-
-          var noIdColHeaders = colHeaders.filter(function(r) {
-            if (r != "_id") return r;
-          });
-
-          UI.select(noIdColHeaders, {
-            id: "field-to-delete",
-            parent: swalNode
-          }, function(jsType) {});
-
-          // document.querySelector("#field-to-deleteSelect").value = noIdColHeaders.pop();
-
-        }
-      }).then(function() {
-        params.field = document.querySelector("#field-to-deleteSelect").value;
-
-        if (!params.field) {
-          return swal({
-            type: "warning",
-            title: "no field to delete"
-          });
-        }
-
-        $.post("/mongo/unsetfield", params, function(r) {
-          if (r && r.ok && (r.ok == 1)) {
-            location.reload();
-          } else statusNode.innerHTML = JSON.stringify(r);
-        });
-      }).catch(function() {});
-    });
+    Buttons.deleteField(controlNode, params);
 
 
     UI.span({
