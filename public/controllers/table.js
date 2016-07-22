@@ -1,5 +1,9 @@
 var params = Nav.getCollectionFromUrl(); //todo: create clone of params on requests?
+localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
+  params.query = localStorage["query" + params.db + params.collection];
 var controlNode = document.querySelector("#control");
+
+
 
 var statusNode;
 var hot, columns, colHeaders, idArr, minSpareRows = 1; //todo: group in one object?
@@ -30,7 +34,7 @@ function getDataMongo(params) {
         html: "<textarea  id='query' cols='60' rows='12' style='font-family: monospace; font-size: 12px'></textarea><div id='swal-div'></div>",
         onOpen: function() {
           queryNode = document.querySelector("#query");
-          queryNode.value = localStorage.queryCode || "{}";
+          queryNode.value = localStorage["query" + params.db + params.collection];
           var swalNode = document.querySelector("#swal-div");
 
           UI.button({
@@ -43,7 +47,7 @@ function getDataMongo(params) {
             var query = {};
             try {
               query = JSON.parse(queryNode.value);
-              localStorage.queryCode = JSON.stringify(query);
+              localStorage["query" + params.db + params.collection] = JSON.stringify(query);
               params.query = JSON.stringify(query);
               getDataMongo(params);
             } catch (e) {
@@ -59,11 +63,11 @@ function getDataMongo(params) {
             parent: swalNode,
 
           }, function() {
-            
+
             var query = {};
             try {
               query = JSON.parse(queryNode.value);
-              localStorage.queryCode = JSON.stringify(query);
+              localStorage["query" + params.db + params.collection] = JSON.stringify(query);
               params.query = JSON.stringify(query);
 
               $.post("/mongo/remove", params, function(r) {
@@ -72,7 +76,7 @@ function getDataMongo(params) {
 
                 } else statusNode.innerHTML = JSON.stringify(r);
               });
-              
+
             } catch (e) {
               console.warn(e);
             }
@@ -94,16 +98,17 @@ function getDataMongo(params) {
     });
 
 
-    UI.button({
-      innerHTML: "Reset query",
-      id: "reset-query",
-      className: "",
-      parent: controlNode,
-    }, function() {
-      localStorage.queryCode = "{}";
-      params.query = "{}";
-      getDataMongo(params);
-    });
+    if (localStorage["query" + params.db + params.collection] != "{}") {
+      UI.button({
+        innerHTML: "Reset query",
+        id: "reset-query",
+        className: "",
+        parent: controlNode,
+      }, function() {
+        localStorage["query" + params.db + params.collection] = "{}";
+        location.reload();
+      });
+    }
 
 
     UI.button({

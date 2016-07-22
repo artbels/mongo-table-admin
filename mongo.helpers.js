@@ -222,24 +222,6 @@ MH.dropCollection = function(params) {
 };
 
 
-MH.dropDatabase = function(params) {
-  return new Promise(function(res, err) {
-    if (!params.db) return err("!params.db");
-
-    MongoClient.connect(params.db, function(e, db) {
-      if (e) return err(e);
-
-      db.dropDatabase(function(e, r) {
-        if (e) return err(e);
-
-        res(r);
-        db.close();
-      });
-    });
-  });
-};
-
-
 MH.distinct = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
