@@ -38,7 +38,7 @@ function getDataMongo(params) {
 
     Controls.resetQuery(controlNode, params);
 
-    Controls.otherActions(controlNode, params, columns, hot);
+    Controls.otherActions(controlNode, params, columns, hot, params.collection);
 
     UI.span({
       innerHTML: (arr.length - 1) + " rows found",

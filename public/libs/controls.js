@@ -59,7 +59,7 @@
 
 
 
-  Controls.otherActions = function(controlNode, params, columns, hot) {
+  Controls.otherActions = function(controlNode, params, columns, hot, collection) {
     var otherFunctions = {
       "Add field": function() {
         Swals.addField(columns, hot);
@@ -72,6 +72,19 @@
       },
       "Drop collection": function() {
         Swals.dropCollection(params);
+      }, 
+      "Export dataset": function() {
+        var hotData = hot.getData();
+        var colHeaders = hot.getColHeader();
+        var minSpareRows = 1;
+        var arr = HH.convArrArrToArrObj(hotData, minSpareRows, colHeaders, columns);
+        var fileName = collection || "renameMe";
+        var data = "data:application/json," + encodeURIComponent(JSON.stringify(arr));
+
+        var a = document.createElement("a");
+        a.href = data;
+        a.download = fileName + ".json";
+        a.click();
       }
     };
 
