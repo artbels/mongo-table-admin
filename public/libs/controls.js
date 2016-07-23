@@ -85,11 +85,13 @@
         a.href = data;
         a.download = fileName + ".json";
         a.click();
+        document.querySelector("#other-actionsSelect > option").selected = true;
       }
     };
 
     UI.select(Object.keys(otherFunctions), {
       parent: controlNode,
+      id: "other-actions",
       firstRowText: "Other actions",
       style: {
         margin: "10px"

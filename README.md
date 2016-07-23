@@ -21,7 +21,6 @@ Rememeber to always back up important data. Everybody can sometimes unintentiona
 
 ### installation
 git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin  
-npm install  
 npm start  
 [localhost:12369](http://localhost:12369)
 
