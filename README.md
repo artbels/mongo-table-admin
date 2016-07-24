@@ -1,6 +1,6 @@
 # mongo-table-admin (MTA)
 
-Admin interface for mongo. Work with documents as table rows. Integrates Handsontable - great inline edit tool, and Pivottable - data discovery and analisys tool.
+Admin interface for mongo. Work with documents as table rows. Integrates [Handsontable](https://handsontable.com/) - great inline edit tool, and [Pivottable](https://github.com/nicolaskruchten/pivottable) - data discovery and analisys tool.
 
 ### why
 

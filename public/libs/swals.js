@@ -299,7 +299,7 @@
   };
 
 
-  Swals.chooseCollection = function(list, dbPath) {
+  Swals.chooseCollection = function(list) {
     swal({
       title: "Choose collection",
       html: "<div id='swal-div' align='center'></div>",
@@ -307,14 +307,14 @@
       onOpen: function() {
 
         var swalDivNode = document.querySelector("#swal-div");
+        var dbPath = localStorage["input#db-path"];
         var i = 0;
         var l = list.length;
         var collArr = [];
 
         (function next() {
           var name = list[i].name;
-          var db = dbPath.match(/\/(\w+?)\/?$/)[1];
-
+          var currDbName = dbPath.split(/\//).pop();
 
           $.post("/mongo/collectionstats", {
             db: dbPath,
@@ -332,8 +332,8 @@
               collection: name,
               documents: r.count,
               size: sizeStr,
-              table: "<a href='/" + db + "/" + name + "/table" + "'>" + "table" + "</a>",
-              pivot: "<a href='/" + db + "/" + name + "/pivot" + "'>" + "pivot" + "</a>"
+              table: "<a href='/" + currDbName + "/" + name + "/table" + "'>" + "table" + "</a>",
+              pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>"
             };
 
             collArr.push(collObj);
@@ -410,7 +410,8 @@
                 marginRight: "10px"
               }
             }, function(r) {
-              localStorage["input#db-path"] = localStorage["input#db-path"].replace(/(?:\/)(\w+?)\/?$/, "/" + r);
+              var currDbName = localStorage["input#db-path"].split(/\//).pop();
+              localStorage["input#db-path"] = localStorage["input#db-path"].replace(currDbName, r);
               Controls.collections();
             });
 

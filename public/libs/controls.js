@@ -129,7 +129,7 @@
       db: dbPath
     }, function(list) {
 
-      Swals.chooseCollection(list, dbPath);
+      Swals.chooseCollection(list);
     });
   };
 
