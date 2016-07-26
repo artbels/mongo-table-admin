@@ -25,6 +25,11 @@ npm start
 [localhost:12369](http://localhost:12369)
 
 
+### security
+ip control by setting list of IPs in MTA_IPS environment variable  
+export MTA_IPS=
+
+
 ### usage
 
 [add rows (localhost:12369/create)](http://localhost:12369/create) example on youtube:

@@ -45,7 +45,7 @@
           getDataMongo(params);
         });
       }
-    });
+    }).catch(function() {});
   };
 
 

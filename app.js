@@ -3,6 +3,7 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var mongoRoutes = require('./routes/mongo');
+var auth = require('basic-auth');
 
 var app = express();
 
@@ -13,10 +14,23 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
+
+
+if (process.env.MTA_IPS) {
+  app.use(function(req, res, next) {
+    var ipArr = process.env.MTA_IPS.split(/, ?/);
+    var ip = req.headers["x-real-ip"] || req.ips.pop() || req.ip;
+
+    if (ipArr.indexOf(ip) != -1) return next();
+    else res.status(401).send('ip not in whitelist');
+  });
+}
 
 app.use('/mongo', mongoRoutes);
 
