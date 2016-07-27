@@ -163,8 +163,6 @@ function printTable(arr, params) {
     (function next() {
       params.id = idArr[rowNum];
 
-      console.log(params);
-
       $.post("/mongo/removebyid", params, function(r) {
         if (r && r.ok && (r.ok == 1)) {
           statusNode.innerHTML = params.id + " deleted";

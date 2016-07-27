@@ -52,15 +52,22 @@
       UI.button({
         innerHTML: "Switch to table",
         id: "switch-to-table",
+        style: {
+          margin: "8px"
+        },
         parent: switchLiNode
       }, function () {
         Controls.changeView("table");
       });
+      
     } else {
       UI.button({
         innerHTML: "Switch to pivot",
         id: "switch-to-pivot",
-        parent: switchLiNode
+        parent: switchLiNode,
+        style: {
+          margin: "8px"
+        }
       }, function () {
         Controls.changeView("pivot");
       });
