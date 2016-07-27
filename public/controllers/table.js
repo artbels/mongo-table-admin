@@ -1,6 +1,11 @@
 var params = Controls.getCollectionFromUrl(); //todo: create clone of params on requests?
+
 localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
+localStorage["projection" + params.db + params.collection] = localStorage["projection" + params.db + params.collection] || "{}";
+
 params.query = localStorage["query" + params.db + params.collection];
+params.projection = localStorage["projection" + params.db + params.collection];
+
 var controlNode = document.querySelector("#control");
 
 var spinner = new Spinner({

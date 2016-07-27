@@ -53,8 +53,8 @@
 
     var queryNode;
     var html = "<textarea  id='query' cols='45' rows='9' style='font-family: monospace; font-size: 16px'></textarea>";
-    html += '<br><a id="add-projection" href="#" style="font-size: 80%;">add projection</a><br>';
-    html += "<textarea  id='projection' cols='45' rows='3' style='font-family: monospace; font-size: 16px' hidden></textarea>";
+    html += '<br><a id="add-projection" href="#" style="font-size: 80%;">edit projection</a><br>';
+    html += "<textarea  id='projection' cols='45' rows='3' style='font-family: monospace; font-size: 16px' hidden>{}</textarea>";
     html += "<div id='swal-div'></div>";
     swal({
       title: "Valid JSON please",
@@ -68,13 +68,14 @@
 
         var addProjNode = document.querySelector("#add-projection");
         var projNode = document.querySelector("#projection");
+        projNode.value = localStorage["projection" + params.db + params.collection];
 
         addProjNode.onclick = function () {
-          if(addProjNode.innerHTML == "add projection") {
+          if(addProjNode.innerHTML == "edit projection") {
             addProjNode.innerHTML = "hide projection";
             projNode.hidden = false;
           } else {
-            addProjNode.innerHTML = "add projection";
+            addProjNode.innerHTML = "edit projection";
             projNode.hidden = true;
           }
         };
@@ -87,11 +88,16 @@
           parent: swalNode,
 
         }, function() {
-          var query = {};
+          var query = {}, projection = {};
           try {
             query = JSON.parse(queryNode.value);
             localStorage["query" + params.db + params.collection] = JSON.stringify(query);
             params.query = JSON.stringify(query);
+
+            projection = JSON.parse(projNode.value);
+            localStorage["projection" + params.db + params.collection] = JSON.stringify(projection);
+            params.projection = JSON.stringify(projection);
+
             location.reload();
           } catch (e) {
             console.warn(e);
