@@ -52,15 +52,33 @@
   Swals.buildQuery = function(controlNode, params) {
 
     var queryNode;
+    var html = "<textarea  id='query' cols='45' rows='9' style='font-family: monospace; font-size: 16px'></textarea>";
+    html += '<br><a id="add-projection" href="#" style="font-size: 80%;">add projection</a><br>';
+    html += "<textarea  id='projection' cols='45' rows='3' style='font-family: monospace; font-size: 16px' hidden></textarea>";
+    html += "<div id='swal-div'></div>";
     swal({
       title: "Valid JSON please",
       showCancelButton: false,
       showConfirmButton: false,
-      html: "<textarea  id='query' cols='45' rows='9' style='font-family: monospace; font-size: 16px'></textarea><div id='swal-div'></div>",
+      html: html,
       onOpen: function() {
         queryNode = document.querySelector("#query");
         queryNode.value = localStorage["query" + params.db + params.collection];
         var swalNode = document.querySelector("#swal-div");
+
+        var addProjNode = document.querySelector("#add-projection");
+        var projNode = document.querySelector("#projection");
+
+        addProjNode.onclick = function () {
+          if(addProjNode.innerHTML == "add projection") {
+            addProjNode.innerHTML = "hide projection";
+            projNode.hidden = false;
+          } else {
+            addProjNode.innerHTML = "add projection";
+            projNode.hidden = true;
+          }
+        };
+
 
         UI.button({
           innerHTML: "Find matching",
@@ -383,56 +401,56 @@
 
 
   Swals.chooseDb = function(list) {
-      swal({
-        title: "Choose Database",
-        html: "<div id='swal-div' align='center'></div>",
-        showConfirmButton: false,
-        onOpen: function() {
+    swal({
+      title: "Choose Database",
+      html: "<div id='swal-div' align='center'></div>",
+      showConfirmButton: false,
+      onOpen: function() {
 
-          var swalDivNode = document.querySelector("#swal-div");
+        var swalDivNode = document.querySelector("#swal-div");
 
-          var i = 0;
-          var l = list.databases.length;
+        var i = 0;
+        var l = list.databases.length;
 
-          (function next() {
-            var dbName = list.databases[i].name;
-            var size = list.databases[i].sizeOnDisk / 1024 / 1024;
-            var sizeStr;
+        (function next() {
+          var dbName = list.databases[i].name;
+          var size = list.databases[i].sizeOnDisk / 1024 / 1024;
+          var sizeStr;
 
-            if (size > 100) sizeStr = (size / 1024).toFixed(2) + "GB";
-            else sizeStr = (size).toFixed(2) + "MB";
-
-            UI.button({
-              parent: swalDivNode,
-              innerHTML: dbName + ", " + sizeStr,
-              id: dbName,
-              style: {
-                marginRight: "10px"
-              }
-            }, function(r) {
-              var currDbName = localStorage["input#db-path"].split(/\//).pop();
-              localStorage["input#db-path"] = localStorage["input#db-path"].replace(currDbName, r);
-              Controls.collections();
-            });
-
-            i++;
-
-            if (i < l) next();
-
-          })();
-
-          UI.br(swalDivNode);
+          if (size > 100) sizeStr = (size / 1024).toFixed(2) + "GB";
+          else sizeStr = (size).toFixed(2) + "MB";
 
           UI.button({
             parent: swalDivNode,
-            id: "change-db-path",
-            className: "btn btn-primary",
-            innerHTML: 'Change DB Path',
-          }, function() {
-            Swals.dbPath();
+            innerHTML: dbName + ", " + sizeStr,
+            id: dbName,
+            style: {
+              marginRight: "10px"
+            }
+          }, function(r) {
+            var currDbName = localStorage["input#db-path"].split(/\//).pop();
+            localStorage["input#db-path"] = localStorage["input#db-path"].replace(currDbName, r);
+            Controls.collections();
           });
-        }
-      }).catch(function() {});
+
+          i++;
+
+          if (i < l) next();
+
+        })();
+
+        UI.br(swalDivNode);
+
+        UI.button({
+          parent: swalDivNode,
+          id: "change-db-path",
+          className: "btn btn-primary",
+          innerHTML: 'Change DB Path',
+        }, function() {
+          Swals.dbPath();
+        });
+      }
+    }).catch(function() {});
   };
 
 })();
