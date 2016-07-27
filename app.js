@@ -26,10 +26,9 @@ if (process.env.MTA_IPS) {
   app.use(function(req, res, next) {
     var ipArr = process.env.MTA_IPS.split(/, ?/);
     var ip = req.headers["x-real-ip"] || req.ips.pop() || req.ip;
-    console.log(ipArr, ip);
 
     if (ipArr.indexOf(ip) != -1) return next();
-    else res.status(401).send('ip not in whitelist');
+    else res.status(401).send("ip " + ip + ' not in whitelist');
   });
 }
 

@@ -1,3 +1,3 @@
 # mongo-control
 
-simple functions for most usual tasks
+simple functions for most usual tasks with mongo

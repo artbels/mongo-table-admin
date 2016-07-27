@@ -163,6 +163,8 @@ function printTable(arr, params) {
     (function next() {
       params.id = idArr[rowNum];
 
+      console.log(params);
+
       $.post("/mongo/removebyid", params, function(r) {
         if (r && r.ok && (r.ok == 1)) {
           statusNode.innerHTML = params.id + " deleted";
@@ -173,7 +175,7 @@ function printTable(arr, params) {
 
         if (numRows > 0) next();
         else {
-          updateStatusDelayed("Autosaving changes", 3300);
+          updateStatusDelayed("Autosaving changes");
         }
       });
     })();
