@@ -329,6 +329,7 @@ function setColumnType(i, type, instance) {
   columns[i].jsType = type;
   // columns[i].data = colHeaders[i];
   if (type == "date") columns[i].dateFormat = 'DD-MMM-YYYY';
+  if (type == "number") columns[i].format = '0.[0000000000]';
 
 
   var hotData = hot.getData();
@@ -338,16 +339,17 @@ function setColumnType(i, type, instance) {
     var cell = jtem[i];
     if ((cell === null) || (cell === "")) continue;
     switch (type) {
-      case "Number":
-        hot.setDataAtCell(j, i, parseInt(cell, 10));
+      case "number":
+        var formattedNumeral = numeral().unformat(cell);
+        hot.setDataAtCell(j, i, formattedNumeral);
         break;
 
-      case "Date":
+      case "date":
         var formattedDate = moment(new Date(cell)).format('DD-MMM-YYYY');
         hot.setDataAtCell(j, i, formattedDate);
         break;
 
-      case "Boolean":
+      case "boolean":
         hot.setDataAtCell(j, i, getBool(cell));
         break;
     }

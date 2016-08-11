@@ -35,6 +35,7 @@
     "ejs": "~2.4.1",
     "express": "~4.13.4",
     "handsontable": "^0.26.0",
+    "handsontable-helpers": "^1.0.6",
     "jquery": "^2.2.4",
     "jszip": "^3.0.0",
     "mongo-control": "^1.0.0",

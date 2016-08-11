@@ -43,6 +43,7 @@
     col.type = HH.typesMap[col.jsType];
     if (prop == "_id") col.readOnly = true;
     if (col.jsType == "date") col.dateFormat = 'DD-MMM-YYYY';
+    else if (col.jsType == "number") col.format = '0.[0000000000]';
     return col;
   };
 
@@ -83,9 +84,8 @@
 
     switch (type) {
       case "number":
-        var parseIntRes = parseInt(data, 10);
-        if (isNaN(parseIntRes)) data = undefined;
-        else data = parseIntRes;
+        if (isNaN(cell)) cell = undefined;
+        else cell = Number(cell);
         break;
 
       case "boolean":
@@ -185,9 +185,8 @@
 
         switch (type) {
           case "number":
-            var parseIntRes = parseInt(cell, 10);
-            if (isNaN(parseIntRes)) cell = undefined;
-            else cell = parseIntRes;
+            if (isNaN(cell)) cell = undefined;
+            else cell = Number(cell);
             break;
 
           case "boolean":
