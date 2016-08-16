@@ -12,6 +12,10 @@ If you are looking for a full featured mongo admin, please check:
 
 Rememeber to always back up important data. Everybody can sometimes unintentionally break something.
 
+### [try demo on heroku](https://mongo-table-admin.herokuapp.com/)
+
+Don't have local mongodb or one with secure url access? Get 500MB free on [mLabs](https://mlab.com/) 
+
 ### features
 
 * Browse, analyze documents using Pivottable - group by rows, columns. Build graphs, export small datasets.
