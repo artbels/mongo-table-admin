@@ -84,8 +84,8 @@
 
     switch (type) {
       case "number":
-        if (isNaN(cell)) cell = undefined;
-        else cell = Number(cell);
+        if (isNaN(data)) data = undefined;
+        else data = Number(data);
         break;
 
       case "boolean":

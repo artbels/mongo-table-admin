@@ -35,17 +35,17 @@
     "ejs": "~2.4.1",
     "express": "~4.13.4",
     "handsontable": "^0.26.0",
-    "handsontable-helpers": "^1.0.6",
+    "handsontable-helpers": "^1.0.19",
     "jquery": "^2.2.4",
-    "jszip": "^3.0.0",
-    "mongo-control": "^1.0.0",
-    "mongodb": "^2.2.2",
+    "jszip": "^3.1.2",
+    "mongo-control": "^1.0.11",
+    "mongodb": "^2.2.8",
     "morgan": "~1.7.0",
     "papaparse": "^4.1.2",
     "pivottable": "^2.1.0",
-    "simple-ui-builder": "^1.0.1",
+    "simple-ui-builder": "^1.0.42",
     "spin": "0.0.1",
-    "sweetalert2": "^4.0.10",
+    "sweetalert2": "^4.1.9",
     "xlsx": "^0.8.0"
   }
 }

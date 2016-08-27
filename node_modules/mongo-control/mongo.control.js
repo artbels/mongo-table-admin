@@ -289,10 +289,21 @@ MC.distinct = function(params) {
   return new Promise(function(res, err) {
     if (!params.db || !params.collection || !params.field) return err("!params.db || !params.collection || !params.field");
 
+    if (params.query) {
+      if (typeof params.query == "string") {
+        try {
+          params.query = JSON.parse(params.query);
+        } catch (e) {
+          params.query = {};
+          err(e);
+        }
+      }
+    } else params.query = {};
+
     MongoClient.connect(params.db, function(e, db) {
       if (e) return err(e);
 
-      db.collection(params.collection).distinct(params.field, function(e, r) {
+      db.collection(params.collection).distinct(params.field, params.query, function(e, r) {
         if (e) return err(e);
 
         res(r);
