@@ -1,14 +1,6 @@
 var params = Controls.getCollectionFromUrl();
 var controlNode = document.querySelector("#control");
 
-var spinner = new Spinner({
-  length: 25,
-  width: 15,
-  radius: 30,
-  scale: 1.5,
-  color: "#606060",
-});
-
 countDataMongo(params);
 
 function countDataMongo(params) {
@@ -20,7 +12,6 @@ function countDataMongo(params) {
     }
   });
 }
-
 
 
 function getDataMongo(params) {

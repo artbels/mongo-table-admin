@@ -6,15 +6,9 @@ localStorage["projection" + params.db + params.collection] = localStorage["proje
 params.query = localStorage["query" + params.db + params.collection];
 params.projection = localStorage["projection" + params.db + params.collection];
 
-var controlNode = document.querySelector("#control");
+UI.appendModal({title: "Visual query"});
 
-var spinner = new Spinner({
-  length: 25,
-  width: 15,
-  radius: 30,
-  scale: 1.5,
-  color: "#606060",
-});
+var controlNode = document.querySelector("#control");
 
 var statusNode;
 var hot, columns, colHeaders, idArr, minSpareRows = 1; //todo: group in one object?
@@ -106,6 +100,12 @@ function printTable(arr, params) {
 
     var chObj = HH.workChanges(changes, arr, columns);
 
+    spinner.spin(document.body);
+
+    if(!window.onbeforeunload) window.onbeforeunload = function() {
+      return "Saving changes in process. If you exit now you would loose your changes.";
+    };
+
     if (chObj.newArr.length) {
       var n = 0;
       var nl = chObj.newArr.length;
@@ -126,6 +126,8 @@ function printTable(arr, params) {
           n++;
           if (n < nl) next();
           else {
+            spinner.stop();
+            window.onbeforeunload = null;
             updateStatusDelayed("Everything saved", 300);
             updateStatusDelayed("Autosaving changes", 3300);
           }
@@ -153,6 +155,8 @@ function printTable(arr, params) {
           u++;
           if (u < ul) next();
           else {
+            spinner.stop();
+            window.onbeforeunload = null;
             updateStatusDelayed("Everything saved", 300);
             updateStatusDelayed("Autosaving changes", 3300);
           }
@@ -164,6 +168,12 @@ function printTable(arr, params) {
   function afterRemoveRow(rowNum, numRows) {
     var i = rowNum;
     var l = numRows + rowNum;
+
+    spinner.spin(document.body);
+
+    if(!window.onbeforeunload) window.onbeforeunload = function() {
+      return "Saving changes in process. If you exit now you would loose your changes.";
+    };
 
     (function next() {
       params.id = idArr[rowNum];
@@ -178,6 +188,8 @@ function printTable(arr, params) {
 
         if (numRows > 0) next();
         else {
+          spinner.stop();
+          window.onbeforeunload = null;
           updateStatusDelayed("Autosaving changes");
         }
       });

@@ -3,14 +3,6 @@ var
   tableNode = document.querySelector("#table"),
   resultsNode = document.querySelector("#results");
 
-var spinner = new Spinner({
-  length: 40,
-  width: 25,
-  radius: 65,
-  scale: 1.5,
-  color: "#606060",
-});
-
 var papaConfig = {
   delimiter: "", // auto-detect
   newline: "", // auto-detect
