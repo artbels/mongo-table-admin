@@ -70,8 +70,8 @@
         var projNode = document.querySelector("#projection");
         projNode.value = localStorage["projection" + params.db + params.collection];
 
-        addProjNode.onclick = function () {
-          if(addProjNode.innerHTML == "edit projection") {
+        addProjNode.onclick = function() {
+          if (addProjNode.innerHTML == "edit projection") {
             addProjNode.innerHTML = "hide projection";
             projNode.hidden = false;
           } else {
@@ -88,7 +88,8 @@
           parent: swalNode,
 
         }, function() {
-          var query = {}, projection = {};
+          var query = {},
+            projection = {};
           try {
             query = JSON.parse(queryNode.value);
             localStorage["query" + params.db + params.collection] = JSON.stringify(query);
@@ -279,6 +280,57 @@
       hot.updateSettings({
         colHeaders: colHeaders,
         columns: columns
+      });
+    }).catch(function() {});
+  };
+
+
+  Swals.getDistinct = function(params, hot) {
+    swal({
+      title: "Get distinct values",
+      showCancelButton: true,
+      html: "<div id='swal-div' align='center'></div>",
+      onOpen: function() {
+        var swalNode = document.querySelector("#swal-div");
+
+        var noIdColHeaders = hot.getColHeader().filter(function(r) {
+          if (r != "_id") return r;
+        });
+
+        UI.select(noIdColHeaders, {
+          id: "field-to-distinct",
+          parent: swalNode
+        }, function(jsType) {});
+
+      }
+    }).then(function() {
+      params.field = document.querySelector("#field-to-distinctSelect").value;
+
+      if (!params.field) {
+        return swal({
+          type: "warning",
+          title: "no field to distinct"
+        });
+      }
+
+      $.post("/mongo/distinct", params, function(arr) {
+
+        if (arr.length > 100) {
+          console.log(JSON.stringify(arr));
+
+          return swal({
+            title: "More than 100",
+            timer: 500,
+            type: "warning"
+          }).done();
+        }
+
+        swal({
+          title: "Distinct values",
+          html: JSON.stringify(arr),
+          type: "success"
+        }).done();
+
       });
     }).catch(function() {});
   };

@@ -67,6 +67,9 @@
       "Rename field": function() {
         Swals.renameField(params, hot);
       },
+      "Distinct values": function() {
+        Swals.getDistinct(params, hot);
+      },
       "Delete field": function() {
         Swals.deleteField(params, hot);
       },
