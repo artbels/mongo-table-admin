@@ -323,6 +323,32 @@
   };
 
 
+  HH.convArrObjArrArr = function(arr) {
+    var uniqColumns = {};
+    var finArr = []; 
+
+    for (var i = 0; i < arr.length; i++) {
+      for (var key in arr[i]) {
+        uniqColumns[key] = true;
+      }
+    }
+
+    var columns = Object.keys(uniqColumns);
+    finArr.push(columns);
+
+    for (var j = 0; j < arr.length; j++) {
+      var row = arr[j];
+      var rowArr = [];
+      for (var col in uniqColumns) {
+        var cell = row[col];
+        rowArr.push(cell);
+      }
+      finArr.push(rowArr);
+    }
+    return finArr;
+  };
+
+
   HH.buildParseSchema = function(columns, colHeaders) {
     var schemeObj = {};
 

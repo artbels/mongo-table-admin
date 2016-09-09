@@ -75,10 +75,13 @@
       },
       "Drop collection": function() {
         Swals.dropCollection(params);
-      }, 
+      },
       "Visual query": function() {
         Controls.openVisualQuery();
-      }, 
+      },
+      "Update each": function() {
+        Controls.updateEach();
+      },
       "Export dataset": function() {
         var hotData = hot.getData();
         var colHeaders = hot.getColHeader();
@@ -101,13 +104,46 @@
     });
   };
 
+
+  Controls.updateEach = function() {
+
+    var params = {
+      height: "450px",
+      parent: document.querySelector("#update-each-body"),
+      id: "ace-code",
+      width: "100%",
+      marginTop: "0px",
+      marginBottom: "0px",
+      code: localStorage['aceEditace-codeValue'] || "//do something with doc\nreturn doc;"
+    };
+
+    Controls.ace(params);
+
+    $("#update-each").modal();
+
+    UI.button({
+      parent: "#update-each-footer",
+      id: "run",
+      innerHTML: "Run"
+    }, function() {
+
+      var eachParams = Controls.getCollectionFromUrl();
+      eachParams.func = params.instance.getValue();
+
+      $.post("/mongo/each", eachParams, function(r) {
+        console.log(r);
+      });
+    });
+  };
+
+
   Controls.openVisualQuery = function() {
 
     var params = Controls.getCollectionFromUrl();
 
     $.post("/mongo/keys", params, function(fields) {
 
-      if(!fields || !fields.length) return;
+      if (!fields || !fields.length) return;
 
       var conditions = {
         "exists": {
@@ -232,8 +268,9 @@
         });
       }
 
-    });    
+    });
   };
+
 
   Controls.changeView = function(newView) {
     var pathname = location.pathname;
@@ -277,6 +314,70 @@
 
       Swals.chooseDb(list);
     });
+  };
+
+  Controls.ace = function(params) {
+
+    params = params || {};
+
+    if (typeof params == "string") params = {
+      code: params,
+    };
+
+    params.parent = params.parent || document.querySelector("#ui") || document.body;
+    params.id = params.id || "jsScript";
+    params.width = params.width || "750px";
+    params.height = params.height || "150px";
+    params.fontSize = params.fontSize || "14px";
+    params.marginTop = params.marginTop || "10px";
+    params.marginBottom = params.marginBottom || "10px";
+
+    var exAceDiv = document.querySelector("#" + params.id);
+    if (exAceDiv) params.parent.removeChild(exAceDiv);
+
+    var aceDiv = document.createElement("div");
+    aceDiv.id = params.id;
+    aceDiv.style.width = params.width;
+    aceDiv.style.height = params.height;
+    aceDiv.style.fontSize = params.fontSize;
+    aceDiv.style.marginTop = params.marginTop;
+    aceDiv.style.marginBottom = params.marginBottom;
+    aceDiv.onkeyup = function(e) {
+      var currVal = params.instance.getValue();
+      localStorage['aceEdit' + params.id + 'Value'] = currVal;
+      if (e.altKey && e.ctrlKey && (e.which == 70)) {
+
+        if (params.mode == "ace/mode/json") {
+          var json;
+          try {
+            json = JSON.parse(currVal);
+          } catch (err) {}
+
+          if (!json) return;
+          var beautifyJson = JSON.stringify(json, null, 2);
+          localStorage['aceEdit' + params.id + 'Value'] = beautifyJson;
+          params.instance.setValue(beautifyJson);
+        } else if (params.mode == "ace/mode/javascript") {
+          var js = js_beautify(currVal, {
+            indent_size: 2,
+            max_preserve_newlines: 1
+          });
+          localStorage['aceEdit' + params.id + 'Value'] = js;
+          params.instance.setValue(js);
+        }
+      }
+    };
+
+    params.parent.appendChild(aceDiv);
+    params.mode = params.mode || "ace/mode/javascript";
+
+    params.instance = ace.edit(params.id);
+    params.instance.$blockScrolling = Infinity;
+    params.instance.setTheme("ace/theme/solarized_light");
+    params.instance.getSession().setMode(params.mode);
+    params.instance.getSession().setUseWrapMode(true);
+    params.instance.setValue(params.code || localStorage['aceEdit' + params.id + 'Value'] || '');
+    params.instance.gotoLine(1);
   };
 
 })();

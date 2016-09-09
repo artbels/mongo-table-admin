@@ -6,7 +6,10 @@ localStorage["projection" + params.db + params.collection] = localStorage["proje
 params.query = localStorage["query" + params.db + params.collection];
 params.projection = localStorage["projection" + params.db + params.collection];
 
-UI.appendModal({title: "Visual query"});
+UI.appendModal({
+  title: "Update each",
+  id: "update-each"
+});
 
 var controlNode = document.querySelector("#control");
 
@@ -102,7 +105,7 @@ function printTable(arr, params) {
 
     spinner.spin(document.body);
 
-    if(!window.onbeforeunload) window.onbeforeunload = function() {
+    if (!window.onbeforeunload) window.onbeforeunload = function() {
       return "Saving changes in process. If you exit now you would loose your changes.";
     };
 
@@ -133,6 +136,9 @@ function printTable(arr, params) {
           }
         });
       })();
+    } else {
+      window.onbeforeunload = null;
+      spinner.stop();
     }
 
 
@@ -162,6 +168,9 @@ function printTable(arr, params) {
           }
         });
       })();
+    } else {
+      window.onbeforeunload = null;
+      spinner.stop();
     }
   }
 
@@ -171,7 +180,7 @@ function printTable(arr, params) {
 
     spinner.spin(document.body);
 
-    if(!window.onbeforeunload) window.onbeforeunload = function() {
+    if (!window.onbeforeunload) window.onbeforeunload = function() {
       return "Saving changes in process. If you exit now you would loose your changes.";
     };
 

@@ -30,7 +30,7 @@ var
   minSpareCols = 0,
   minSpareRows = 1,
   startRows = 20,
-  startCols = 10;
+  startCols = 20;
 
 for (var i = 0; i < startCols; i++) {
   columns.push({
