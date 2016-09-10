@@ -158,7 +158,7 @@ MC.find = function(params) {
 MC.insert = function(params) {
   return new Promise(function(res, err) {
 
-    if (!params.db || !params.collection || !params.data || !params.data.length) return err("!params.db || !params.collection || !params.data");
+    if (!params.db || !params.collection || !params.data) return err("!params.db || !params.collection || !params.data");
 
     if (typeof params.data == "string") {
       try {
@@ -176,6 +176,8 @@ MC.insert = function(params) {
         err(e);
       }
     }
+
+    if(!params.data.length) return err("nothing to save, empty array");
 
     params.keepGoing = params.keepGoing || false;
 

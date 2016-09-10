@@ -101,6 +101,7 @@
       }
     }, function(r) {
       otherFunctions[r]();
+      document.querySelector("select#other-actionsSelect > option").selected = true;
     });
   };
 
@@ -300,7 +301,10 @@
       db: dbPath
     }, function(list) {
 
-      Swals.chooseCollection(list);
+      if(list.length) 
+        Swals.chooseCollection(list);
+      else
+        Controls.dbs();
     });
   };
 

@@ -11,6 +11,11 @@ UI.appendModal({
   id: "update-each"
 });
 
+UI.appendModal({
+  title: "Query",
+  id: "query"
+});
+
 var controlNode = document.querySelector("#control");
 
 var statusNode;
@@ -92,6 +97,7 @@ function printTable(arr, params) {
     afterRemoveRow: afterRemoveRow
   });
 
+
   function afterChange(changes, src) {
 
     if (src == "loadData") return;
@@ -106,7 +112,7 @@ function printTable(arr, params) {
     spinner.spin(document.body);
 
     if (!window.onbeforeunload) window.onbeforeunload = function() {
-      return "Saving changes in process. If you exit now you would loose your changes.";
+      return "Saving changes in process. If you exit now you would lose your changes.";
     };
 
     if (chObj.newArr.length) {
@@ -181,7 +187,7 @@ function printTable(arr, params) {
     spinner.spin(document.body);
 
     if (!window.onbeforeunload) window.onbeforeunload = function() {
-      return "Saving changes in process. If you exit now you would loose your changes.";
+      return "Saving changes in process. If you exit now you would lose your changes.";
     };
 
     (function next() {

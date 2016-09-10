@@ -42,7 +42,7 @@
     "handsontable-helpers": "^1.0.23",
     "jquery": "^2.2.4",
     "jszip": "^3.1.2",
-    "mongo-control": "^1.0.19",
+    "mongo-control": "^1.0.20",
     "mongodb": "^2.2.9",
     "morgan": "~1.7.0",
     "papaparse": "^4.1.2",

@@ -141,6 +141,14 @@
 
 
   Swals.dropCollection = function(params) {
+
+    if(typeof params == "string") {
+      params = {
+        db: localStorage["input#db-path"],
+        collection: params
+      };
+    }
+
     swal({
       title: "Drop collection?",
       type: "warning",
@@ -380,6 +388,7 @@
       title: "Choose collection",
       html: "<div id='swal-div' align='center'></div>",
       showConfirmButton: false,
+      width: 700,
       onOpen: function() {
 
         var swalDivNode = document.querySelector("#swal-div");
@@ -409,7 +418,8 @@
               documents: r.count,
               size: sizeStr,
               table: "<a href='/" + currDbName + "/" + name + "/table" + "'>" + "table" + "</a>",
-              pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>"
+              pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>",
+              x: "<a href='#' onclick='Swals.dropCollection(\"" + name + "\")'>x</a>",
             };
 
             collArr.push(collObj);
@@ -432,9 +442,12 @@
 
 
   Swals.dbPath = function() {
+    var html = "Please enter mongo url<div id='swal-div' align='center'></div>";
+    html += '<a href="#" style = "font-size:80%;" onclick="document.querySelector(\'#db-path\').value = \'mongodb://localhost:27017/test\';">ex. mongodb://localhost:27017/test</a>';
+
     swal({
       // title: "Mongo URL",
-      html: "Please enter mongo url<div id='swal-div' align='center'> </div>",
+      html: html,
       allowOutsideClick: false,
       allowEscapeKey: false,
       onOpen: function() {
@@ -450,9 +463,9 @@
             width: "420px"
           }
         });
-
       }
     }).then(function() {
+      localStorage["input#db-path"] = document.querySelector('#db-path').value;
       Controls.collections();
     }).catch(function() {});
   };
@@ -486,8 +499,13 @@
               marginRight: "10px"
             }
           }, function(r) {
-            var currDbName = localStorage["input#db-path"].split(/\//).pop();
-            localStorage["input#db-path"] = localStorage["input#db-path"].replace(currDbName, r);
+            var reUrl = /^mongodb\:\/\/([\w\d\-\_]+)(\:\d+)?(\/.*)?$/;
+
+            var currPath = localStorage["input#db-path"];
+            var currDbName = currPath.match(reUrl)[3];
+            var urlWithoutDb = currPath.replace(currDbName, "").replace(/\/$/,'');
+ 
+            localStorage["input#db-path"] = urlWithoutDb + "/" + r;
             Controls.collections();
           });
 

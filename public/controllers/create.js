@@ -94,9 +94,13 @@ UI.button({
 
 
 function saveDataMongo(arr) {
+  var html = "Enter mongo url and collection name";
+  html += "<div align='center' id='swal-div'></div>";
+  html += "<div align='center' id='swal-div'></div>";
+
   swal({
     // title: "Mongo URL",
-    html: "Please enter mongo url<div id='swal-div'> </div>",
+    html: html,
     allowEscapeKey: false,
     showConfirmButton: false,
     onOpen: function() {
@@ -107,8 +111,9 @@ function saveDataMongo(arr) {
         id: "db-path",
         placeholder: 'mongodb://localhost:27017/test',
         style: {
+          width: '100%',
           fontSize: '100%',
-          textAlign: "center"
+          textAlign: 'center'
         }
       });
 
@@ -117,8 +122,8 @@ function saveDataMongo(arr) {
         id: "collection",
         placeholder: 'collection',
         style: {
-          fontSize: '100%',
-          textAlign: "center"
+          fontSize: '120%',
+          textAlign: 'center'
         }
       });
 
@@ -126,12 +131,21 @@ function saveDataMongo(arr) {
         parent: swalDiv,
         id: "save-arr",
         innerHTML: 'Save',
-        style: {
-          fontSize: '120%',
-          // textAlign: "center"
-        }
+        className: 'btn btn-primary'
       }, function() {
-        saveArrMongoChunks(arr);
+
+        if(arr.length)
+          saveArrMongoChunks(arr);
+        else
+          swal({title: "nothing to save!", timer: 800, type: "warning"}).done();
+      });
+
+      UI.button({
+        parent: swalDiv,
+        id: "cancel",
+        innerHTML: 'Cancel'
+      }, function() {
+        swal.close();
       });
     }
   }).catch(function() {});
