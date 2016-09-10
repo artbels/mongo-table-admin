@@ -1,4 +1,5 @@
 var params = Controls.getCollectionFromUrl(); //todo: create clone of params on requests?
+console.log(params);
 
 localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
 localStorage["projection" + params.db + params.collection] = localStorage["projection" + params.db + params.collection] || "{}";
@@ -13,7 +14,7 @@ UI.appendModal({
 
 UI.appendModal({
   title: "Query",
-  id: "query"
+  id: "query-modal"
 });
 
 var controlNode = document.querySelector("#control");

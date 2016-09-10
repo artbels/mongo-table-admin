@@ -64,6 +64,7 @@
       onOpen: function() {
         queryNode = document.querySelector("#query");
         queryNode.value = localStorage["query" + params.db + params.collection];
+
         var swalNode = document.querySelector("#swal-div");
 
         var addProjNode = document.querySelector("#add-projection");
@@ -603,7 +604,7 @@
 
       spinner.spin(document.body);
 
-      var chunkSize = 100;
+      var chunkSize = 10;
       var chunks = Math.ceil(arr.length / chunkSize);
       var currChunk = 0;
 

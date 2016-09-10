@@ -233,6 +233,9 @@
         "is false": {
           "$eq": false
         },
+        "is null": {
+          "$eq": null
+        },
       };
 
       var clonedFields = JSON.parse(JSON.stringify(fields));
