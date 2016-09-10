@@ -83,7 +83,7 @@ UI.button({
   var hotData = hot.getData();
   var colHeaders = hot.getColHeader();
   var arr = HH.convArrArrToArrObj(hotData, minSpareRows, colHeaders, columns);
-  saveDataMongo(arr);
+  Swals.saveDataMongo(arr);
 });
 
 
@@ -91,96 +91,6 @@ UI.button({
 /**
  * Functions
  */
-
-
-function saveDataMongo(arr) {
-  var html = "Enter mongo url and collection name";
-  html += "<div align='center' id='swal-div'></div>";
-  html += "<div align='center' id='swal-div'></div>";
-
-  swal({
-    // title: "Mongo URL",
-    html: html,
-    allowEscapeKey: false,
-    showConfirmButton: false,
-    onOpen: function() {
-      var swalDiv = document.querySelector("#swal-div");
-
-      UI.input({
-        parent: swalDiv,
-        id: "db-path",
-        placeholder: 'mongodb://localhost:27017/test',
-        style: {
-          width: '100%',
-          fontSize: '100%',
-          textAlign: 'center'
-        }
-      });
-
-      UI.input({
-        parent: swalDiv,
-        id: "collection",
-        placeholder: 'collection',
-        style: {
-          fontSize: '120%',
-          textAlign: 'center'
-        }
-      });
-
-      UI.button({
-        parent: swalDiv,
-        id: "save-arr",
-        innerHTML: 'Save',
-        className: 'btn btn-primary'
-      }, function() {
-
-        if(arr.length)
-          saveArrMongoChunks(arr);
-        else
-          swal({title: "nothing to save!", timer: 800, type: "warning"}).done();
-      });
-
-      UI.button({
-        parent: swalDiv,
-        id: "cancel",
-        innerHTML: 'Cancel'
-      }, function() {
-        swal.close();
-      });
-    }
-  }).catch(function() {});
-}
-
-
-function saveArrMongoChunks(arr) {
-  spinner.spin(document.body);
-
-  var chunkSize = 100;
-  var chunks = Math.ceil(arr.length / chunkSize);
-  var currChunk = 0;
-
-  (function workChunk() {
-    var start = currChunk * chunkSize;
-    var currArr = arr.slice(start, chunkSize * (currChunk + 1));
-
-    var params = {
-      db: document.querySelector("#db-path").value,
-      collection: document.querySelector("#collection").value,
-      data: JSON.stringify(currArr)
-    };
-    $.post("/mongo/insert", params, function(r) {
-      if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-
-        currChunk++;
-        if (currChunk < chunks) workChunk();
-        else {
-          swal("everything saved!");
-          spinner.stop();
-        }
-      }
-    });
-  })();
-}
 
 
 function setHeadersFirstRow() {

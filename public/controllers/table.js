@@ -7,7 +7,7 @@ params.query = localStorage["query" + params.db + params.collection];
 params.projection = localStorage["projection" + params.db + params.collection];
 
 UI.appendModal({
-  title: "Update each",
+  title: "Run function on each",
   id: "update-each"
 });
 

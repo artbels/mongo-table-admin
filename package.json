@@ -10,7 +10,7 @@
     "import data to mongo",
     "parse dashboard"
   ],
-  "version": "0.9.38",
+  "version": "1.0.0",
   "author": {
     "name": "Artem Bilodid",
     "email": "artbels@gmail.com",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "ace-builds": "^1.2.5",
-    "artbels-js-tools": "^1.0.17",
+    "artbels-js-tools": "^1.0.20",
     "basic-auth": "^1.0.4",
     "body-parser": "~1.15.1",
     "bootstrap": "^3.3.6",
@@ -42,7 +42,7 @@
     "handsontable-helpers": "^1.0.23",
     "jquery": "^2.2.4",
     "jszip": "^3.1.2",
-    "mongo-control": "^1.0.20",
+    "mongo-control": "^1.0.26",
     "mongodb": "^2.2.9",
     "morgan": "~1.7.0",
     "papaparse": "^4.1.2",

@@ -79,10 +79,13 @@
       "Visual query": function() {
         Controls.openVisualQuery();
       },
-      "Update each": function() {
+      "Run function on each": function() {
         Controls.updateEach();
       },
-      "Export dataset": function() {
+      "Import JSON": function() {
+        Controls.importJson();
+      },
+      "Export JSON": function() {
         var hotData = hot.getData();
         var colHeaders = hot.getColHeader();
         var minSpareRows = 1;
@@ -103,6 +106,33 @@
       otherFunctions[r]();
       document.querySelector("select#other-actionsSelect > option").selected = true;
     });
+  };
+
+
+  Controls.importJson = function() {
+    swal({
+      title: "Import JSON",
+      html: "<div id='swal-div'></div>",
+      showConfirmButton: false,
+      showCancelButton: true,
+      onOpen: function() {
+        var swalNode = document.querySelector("#swal-div");
+
+        UI.fileReader({
+          parent: swalNode,
+          json: true
+        }, function(r) {
+          if (typeof r != "object")
+            return swal({
+              title: "File is not json",
+              timer: 800,
+              type: "warning"
+            }).done();
+
+          Swals.saveDataMongo(r);
+        });
+      }
+    }).done();
   };
 
 
@@ -131,8 +161,31 @@
       var eachParams = Controls.getCollectionFromUrl();
       eachParams.func = params.instance.getValue();
 
-      $.post("/mongo/each", eachParams, function(r) {
-        console.log(r);
+      if (!eachParams.func) return swal({
+        title: "no code provided",
+        timer: 800,
+        type: "error"
+      }).done();
+
+      T.post("/mongo/each", eachParams).then(function(r) {
+        if (r == "completed") {
+          swal({
+            title: "all done!",
+            timer: 800,
+            type: "success"
+          }).then(function() {
+            location.reload();
+          }).catch(function() {
+            location.reload();
+          });
+
+          $("#update-each").modal('hide');
+
+        } else
+          swal({
+            html: r,
+            type: "error"
+          }).done();
       });
     });
   };
@@ -142,7 +195,7 @@
 
     var params = Controls.getCollectionFromUrl();
 
-    $.post("/mongo/keys", params, function(fields) {
+    T.post("/mongo/keys", params).then(function(fields) {
 
       if (!fields || !fields.length) return;
 
@@ -301,7 +354,7 @@
       db: dbPath
     }, function(list) {
 
-      if(list.length) 
+      if (list.length)
         Swals.chooseCollection(list);
       else
         Controls.dbs();
