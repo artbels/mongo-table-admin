@@ -385,60 +385,66 @@
 
 
   Swals.chooseCollection = function(list) {
-    swal({
-      title: "Choose collection",
-      html: "<div id='swal-div' align='center'></div>",
-      showConfirmButton: false,
-      width: 700,
-      onOpen: function() {
+    spinner.spin(document.body);
 
-        var swalDivNode = document.querySelector("#swal-div");
-        var dbPath = localStorage["input#db-path"];
-        var i = 0;
-        var l = list.length;
-        var collArr = [];
+    var dbPath = localStorage["input#db-path"];
+    var i = 0;
+    var l = list.length;
+    var collArr = [];
 
-        (function next() {
-          var name = list[i].name;
-          var currDbName = dbPath.split(/\//).pop();
+    (function next() {
+      var name = list[i].name;
+      var currDbName = dbPath.split(/\//).pop();
 
-          $.post("/mongo/collectionstats", {
-            db: dbPath,
-            collection: name
-          }, function(r) {
+      $.post("/mongo/collectionstats", {
+        db: dbPath,
+        collection: name
+      }, function(r) {
 
-            var sizeStr;
-            var sizeKb = r.size / 1024;
+        var sizeStr;
+        var sizeKb = r.size / 1024;
 
-            if (sizeKb > 100000) sizeStr = (sizeKb / 1024 / 1024).toFixed(1) + "GB";
-            else if (sizeKb > 100) sizeStr = (sizeKb / 1024).toFixed(1) + "MB";
-            else sizeStr = (sizeKb).toFixed(1) + "KB";
+        if (sizeKb > 100000) sizeStr = (sizeKb / 1024 / 1024).toFixed(1) + "GB";
+        else if (sizeKb > 100) sizeStr = (sizeKb / 1024).toFixed(1) + "MB";
+        else sizeStr = (sizeKb).toFixed(1) + "KB";
 
-            var collObj = {
-              collection: name,
-              documents: r.count,
-              size: sizeStr,
-              table: "<a href='/" + currDbName + "/" + name + "/table" + "'>" + "table" + "</a>",
-              pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>",
-              x: "<a href='#' onclick='Swals.dropCollection(\"" + name + "\")'>x</a>",
-            };
+        var collObj = {
+          collection: name,
+          documents: r.count,
+          size: sizeStr,
+          table: "<a href='/" + currDbName + "/" + name + "/table" + "'>" + "table" + "</a>",
+          pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>",
+          x: "<a href='#' onclick='Swals.dropCollection(\"" + name + "\")'>x</a>",
+        };
 
-            collArr.push(collObj);
+        collArr.push(collObj);
 
-            i++;
+        i++;
 
-            if (i < l) {
-              next();
-            } else {
+        if (i < l) {
+          next();
+        } else {
+
+          swal({
+            title: "Choose collection",
+            html: "<div id='swal-div' align='center'></div>",
+            showConfirmButton: false,
+            width: 700,
+            onOpen: function() {
+
+              var swalDivNode = document.querySelector("#swal-div");
+
+
               UI.table(collArr, {
                 parent: swalDivNode,
                 hideHead: true
               });
             }
-          });
-        })();
-      }
-    }).catch(function() {});
+          }).catch(function() {});
+          spinner.stop();
+        }
+      });
+    })();
   };
 
 

@@ -1,5 +1,4 @@
 var params = Controls.getCollectionFromUrl(); //todo: create clone of params on requests?
-console.log(params);
 
 localStorage["query" + params.db + params.collection] = localStorage["query" + params.db + params.collection] || "{}";
 localStorage["projection" + params.db + params.collection] = localStorage["projection" + params.db + params.collection] || "{}";

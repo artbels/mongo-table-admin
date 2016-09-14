@@ -79,7 +79,7 @@
       "Visual query": function() {
         Controls.openVisualQuery();
       },
-      "Run function on each": function() {
+      "Function on each": function() {
         Controls.updateEach();
       },
       "Import JSON": function() {
