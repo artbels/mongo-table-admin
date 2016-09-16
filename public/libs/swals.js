@@ -324,19 +324,19 @@
 
       $.post("/mongo/distinct", params, function(arr) {
 
-        if (arr.length > 100) {
+        if (arr.length > 200) {
           console.log(JSON.stringify(arr));
 
           return swal({
-            title: "More than 100",
+            title: "More than 200",
             timer: 500,
             type: "warning"
           }).done();
         }
 
         swal({
-          title: "Distinct values",
-          html: JSON.stringify(arr),
+          title: "Distinct values:",
+          html: arr.join(", "),
           type: "success"
         }).done();
 
@@ -537,6 +537,7 @@
   };
 
   Swals.saveDataMongo = function(arr) {
+
     var html = "Enter mongo url and collection name";
     html += "<div align='center' id='swal-div'></div>";
     html += "<div align='center' id='swal-div'></div>";
@@ -610,31 +611,34 @@
 
       spinner.spin(document.body);
 
-      var chunkSize = 10;
-      var chunks = Math.ceil(arr.length / chunkSize);
-      var currChunk = 0;
+      setTimeout(function() {
 
-      (function workChunk() {
-        var start = currChunk * chunkSize;
-        var currArr = arr.slice(start, chunkSize * (currChunk + 1));
+        var chunkSize = 10;
+        var chunks = Math.ceil(arr.length / chunkSize);
+        var currChunk = 0;
 
-        var params = {
-          db: document.querySelector("#db-path").value,
-          collection: document.querySelector("#collection").value,
-          data: JSON.stringify(currArr)
-        };
-        $.post("/mongo/insert", params, function(r) {
-          if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+        (function workChunk() {
+          var start = currChunk * chunkSize;
+          var currArr = arr.slice(start, chunkSize * (currChunk + 1));
 
-            currChunk++;
-            if (currChunk < chunks) workChunk();
-            else {
-              swal("everything saved!");
-              spinner.stop();
+          var params = {
+            db: document.querySelector("#db-path").value,
+            collection: document.querySelector("#collection").value,
+            data: JSON.stringify(currArr)
+          };
+          $.post("/mongo/insert", params, function(r) {
+            if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+
+              currChunk++;
+              if (currChunk < chunks) workChunk();
+              else {
+                swal("everything saved!");
+                spinner.stop();
+              }
             }
-          }
-        });
-      })();
+          });
+        })();
+      }, 10);
     }
   };
 
