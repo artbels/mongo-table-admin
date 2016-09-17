@@ -113,7 +113,7 @@ function setHeadersFirstRow() {
   }
 
   for (var j = 0; j < data.length; j++) {
-    for (var c = 0; c < deleteCols.length; c++) {
+    for (var c = deleteCols.length - 1; c >= 0; c--) {
       var delCol = deleteCols[c];
       data[j].splice(delCol, 1);
     }
