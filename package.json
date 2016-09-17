@@ -10,7 +10,7 @@
     "import data to mongo",
     "parse dashboard"
   ],
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": {
     "name": "Artem Bilodid",
     "email": "artbels@gmail.com",
