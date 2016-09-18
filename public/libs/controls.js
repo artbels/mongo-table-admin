@@ -170,7 +170,7 @@
 
       T.post("/mongo/each", eachParams).then(function(r) {
         console.log(r);
-        if (r && !Object.keys(r).length) {
+        if (r === null || (r && !Object.keys(r).length)) {
           swal({
             title: "all done!",
             type: "success"
