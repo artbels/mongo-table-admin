@@ -159,7 +159,7 @@
     }, function() {
 
       var eachParams = Controls.getCollectionFromUrl();
-      eachParamsюйгукн = localStorage["query" + eachParams.db + eachParams.collection];
+      eachParams.query = localStorage["query" + eachParams.db + eachParams.collection];
       eachParams.func = params.instance.getValue();
 
       if (!eachParams.func) return swal({
