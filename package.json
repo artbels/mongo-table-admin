@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "ace-builds": "^1.2.5",
-    "artbels-js-tools": "^1.0.20",
+    "artbels-js-tools": "^1.0.22",
     "basic-auth": "^1.0.4",
     "body-parser": "~1.15.1",
     "bootstrap": "^3.3.6",
@@ -39,16 +39,16 @@
     "ejs": "~2.4.1",
     "express": "~4.13.4",
     "handsontable": "^0.26.0",
-    "handsontable-helpers": "^1.0.23",
+    "handsontable-helpers": "^1.0.32",
     "jquery": "^2.2.4",
     "jszip": "^3.1.2",
-    "mongo-control": "^1.0.26",
-    "mongodb": "^2.2.9",
+    "mongo-control": "^1.0.33",
+    "mongodb": "^2.2.10",
     "morgan": "~1.7.0",
     "papaparse": "^4.1.2",
     "pivottable": "^2.1.0",
-    "simple-ui-builder": "^1.0.46",
-    "sweetalert2": "^4.2.7",
+    "simple-ui-builder": "^1.0.47",
+    "sweetalert2": "^4.3.3",
     "xlsx": "^0.8.0"
   }
 }

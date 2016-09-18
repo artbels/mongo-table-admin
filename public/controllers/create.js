@@ -123,6 +123,8 @@ function setHeadersFirstRow() {
     'colWidths': undefined
   });
 
+  console.log(newColumns, colHeaders);
+
   hot.updateSettings({
     'columns': newColumns,
     'colHeaders': colHeaders,
@@ -320,7 +322,7 @@ function loadFile(str, file) {
     var workbook = XLSX.read(str, {
       type: 'binary'
     });
-    var workbookJson = to_json(workbook);
+    var workbookJson = conv2Json(workbook);
     var sheetNames = Object.keys(workbookJson);
 
     if (sheetNames.length == 1) return workJson(workbookJson[sheetNames[0]]);
@@ -399,7 +401,7 @@ function convZipStr(buff) {
 }
 
 
-function to_json(workbook) {
+function conv2Json(workbook) {
   var result = {};
   workbook.SheetNames.forEach(function(sheetName) {
     var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName], {

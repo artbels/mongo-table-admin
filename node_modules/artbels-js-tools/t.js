@@ -20,31 +20,41 @@
     params.timeout = params.timeout || 1;
     params.index = params.index || params.i || 0;
     params.len = params.len || arr.length;
+    params.concurrency = params.concurrency || 1;
     params.consoleRound = params.consoleRound || Math.floor(params.len / 20);
     if ((typeof params.verbose == "undefined") && (arr.length > 1000)) params.verbose = true;
 
     var finalArr = [];
 
-    launchNextLine();
+    var received = 0;
 
-    function launchNextLine() {
+    params.concurrency = Math.min(params.len, params.concurrency);
+
+    for (; params.index < params.concurrency; params.index++) {
+      launchNextLine(params.index);
+    }
+
+    function launchNextLine(index) {
       if (params.verbose) {
-        if ((params.index == 1) || ((params.index !== 0) && (params.index % params.consoleRound === 0))) logStatusMessage();
+        if ((index == 1) || ((index !== 0) && (index % params.consoleRound === 0))) logStatusMessage();
       }
 
-      if ((params.index < params.len)) {
-        setTimeout(function() {
-          func(arr[params.index], midCallback, params);
-        }, params.timeout);
-      } else {
-        params.cb(finalArr);
-      }
+      var item = arr[index];
+      func(item, midCallback, params);
     }
 
     function midCallback(res) {
       if (res) finalArr = finalArr.concat(res);
-      params.index++;
-      launchNextLine();
+      received++;
+
+      if (received == params.len) {
+        params.cb(finalArr);
+      } else if (params.index < params.len) {
+        setTimeout(function() {
+          launchNextLine(params.index);
+          params.index++;
+        }, params.timeout);
+      }
     }
 
     function logStatusMessage() {

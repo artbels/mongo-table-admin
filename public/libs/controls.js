@@ -159,6 +159,7 @@
     }, function() {
 
       var eachParams = Controls.getCollectionFromUrl();
+      eachParamsюйгукн = localStorage["query" + eachParams.db + eachParams.collection];
       eachParams.func = params.instance.getValue();
 
       if (!eachParams.func) return swal({
@@ -168,22 +169,17 @@
       }).done();
 
       T.post("/mongo/each", eachParams).then(function(r) {
-        if (r == "completed") {
+        console.log(r);
+        if (r && !Object.keys(r).length) {
           swal({
             title: "all done!",
-            timer: 800,
             type: "success"
-          }).then(function() {
-            location.reload();
-          }).catch(function() {
-            location.reload();
-          });
-
+          }).done();
           $("#update-each").modal('hide');
 
         } else
           swal({
-            html: r,
+            html: JSON.stringify(r),
             type: "error"
           }).done();
       });

@@ -92,18 +92,27 @@
       }
     }
 
+    if (typeof cb == "string") {
+      if (typeof params == "function") {
+        var temp2 = params;
+        params = {
+          innerHTML: cb
+        };
+        cb = temp2;
+      } else if (typeof params == "undefined") {
+        params = {
+          innerHTML: cb
+        };
+        cb = console.log;
+      }
+    }
+
     params = params || {};
 
     cb = cb || function(id) {
       console.log(id + " clicked");
     };
 
-    if (typeof params == "string") params = {
-      innerHTML: params,
-      id: params
-    };
-
-    params.id = params.id || "button";
     params.className = (params.class !== undefined) ?
       params.class :
       ((params.className !== undefined) ?
@@ -111,6 +120,8 @@
         "btn btn-default");
 
     params.innerHTML = params.innerHTML || params.title || "Action";
+
+    params.id = params.id || UI.slug(params.innerHTML);
 
     if (typeof params.parent == "string") {
       params.parent = document.querySelector(params.parent);
@@ -176,7 +187,6 @@
       var buttonParams = {
         parent: params.parent,
         innerHTML: item,
-        id: item.toLowerCase().replace(/[^\w\d]/g, "-"),
         style: {
           margin: "2px"
         }
@@ -325,7 +335,7 @@
     if (params.text) {
       var spanParams = {
         parent: params.parent,
-        id: params.id + "-span",
+        id: UI.slug(params.id) + "-span",
         innerHTML: params.text
       };
 
@@ -373,6 +383,8 @@
         }
       };
       UI.checkbox(cb, checkboxParams);
+      if (params.br) params.parent.appendChild(document.createElement("br"));
+
       i++;
       if (i < l) next();
     })();
@@ -496,7 +508,7 @@
 
     if (!params.innerHTML) return "no innerHTML";
 
-    params.id = params.id || "span";
+    params.id = params.id || UI.slug(params.innerHTML);
 
     if (typeof params.parent == "string") {
       params.parent = document.querySelector(params.parent);
@@ -562,8 +574,9 @@
 
     if (!params.href) return "no href";
 
-    params.id = params.id || "link";
     params.innerHTML = params.innerHTML || params.href;
+
+    params.id = params.id || UI.slug(params.innerHTML);
 
     if (typeof params.parent == "string") {
       params.parent = document.querySelector(params.parent);
@@ -1111,6 +1124,74 @@
     var footerDiv = document.createElement("div");
     footerDiv.id = params.id + "-footer";
     contentDiv.appendChild(footerDiv);
+  };
+
+
+  UI.slug = function(str) {
+    var letterMap = {
+      '/': '_',
+      '\\': '_',
+      'а': 'a',
+      'б': 'b',
+      'в': 'v',
+      'г': 'g',
+      'д': 'd',
+      'е': 'e',
+      'ж': 'zh',
+      'з': 'z',
+      'и': 'i',
+      'й': 'y',
+      'к': 'k',
+      'л': 'l',
+      'м': 'm',
+      'н': 'n',
+      'о': 'o',
+      'п': 'p',
+      'р': 'r',
+      'с': 's',
+      'т': 't',
+      'у': 'u',
+      'ф': 'f',
+      'х': 'kh',
+      'ц': 'ts',
+      'ч': 'ch',
+      'ш': 'sh',
+      'щ': 'sch',
+      'ы': 'i',
+      'ь': '',
+      'ъ': '',
+      'э': 'e',
+      'ю': 'yu',
+      'я': 'ya',
+      'ё': 'e',
+      'є': 'e',
+      'і': 'i',
+      'ї': 'yi',
+      'ґ': 'g',
+      '+': '-plus',
+    };
+
+    var reOtherSymbols = /[^a-z0-9\-_]/gi;
+
+    var replLetters = str.split('').map(function(char) {
+      char = char.toLowerCase();
+      return (letterMap[char] !== undefined) ? letterMap[char] : char;
+    }).join("");
+
+    var replSymb = replLetters.replace(reOtherSymbols, '-');
+
+    var replUnnecDelims = removeUnnecessaryDelims(replSymb);
+
+    return replUnnecDelims;
+
+
+    function removeUnnecessaryDelims(str) {
+      return str
+        .replace(/\-{2,}/g, '-')
+        .replace(/_{2,}/g, '_')
+        .replace(/[\-\_]+$/g, '')
+        .replace(/^[\-\_]+/g, '');
+    }
   };
 
 })();
