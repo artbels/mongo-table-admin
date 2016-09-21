@@ -115,23 +115,30 @@
 
         }, function() {
 
-          var query = {};
-          try {
-            query = JSON.parse(queryNode.value);
-            localStorage["query" + params.db + params.collection] = "{}";
-            params.query = JSON.stringify(query);
+          swal({
+            type: "warning",
+            html: "Are you sure? Delete operation can't be reverted.",
+            showCancelButton: true,
+            confirmButtonText: "Yes, do it"
+          }).then(function() {
+            var query = {};
+            try {
+              query = JSON.parse(queryNode.value);
+              localStorage["query" + params.db + params.collection] = "{}";
+              params.query = JSON.stringify(query);
 
-            $.post("/mongo/remove", params, function(r) {
-              if (r && r.ok && (r.ok == 1)) {
-                location.reload();
+              $.post("/mongo/remove", params, function(r) {
+                if (r && r.ok && (r.ok == 1)) {
+                  location.reload();
 
-              } else statusNode.innerHTML = JSON.stringify(r);
-            });
+                } else statusNode.innerHTML = JSON.stringify(r);
+              });
 
-          } catch (e) {
-            console.warn(e);
-          }
-          swal.close();
+            } catch (e) {
+              console.warn(e);
+            }
+            swal.close();
+          }).catch(function() {});
         });
 
         Controls.cancelSwal(swalNode);

@@ -7,9 +7,74 @@ var reMongoId = /^[0-9a-f]{24}$/;
 var MC = module.exports = {};
 
 
+MC.ensureIndex = function(params) {
+  return new Promise(function(res, err) {
+
+    if (!params.db || !params.collection || !params.index) return err("!params.db || !params.collection || !params.index");
+
+    if (typeof params.index == "string") {
+      try {
+        params.index = JSON.parse(params.index);
+      } catch (e) {
+        err(e);
+      }
+    }
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).ensureIndex(params.index, function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MC.dropIndexes = function(params) {
+  return new Promise(function(res, err) {
+
+    if (!params.db || !params.collection) return err("!params.db || !params.collection");
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).dropIndexes(function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
+MC.indexInfo = function(params) {
+  return new Promise(function(res, err) {
+
+    if (!params.db || !params.collection) return err("!params.db || !params.collection");
+
+    MongoClient.connect(params.db, function(e, db) {
+      if (e) return err(e);
+
+      db.collection(params.collection).indexInformation(function(e, r) {
+        if (e) return err(e);
+
+        res(r);
+        db.close();
+      });
+    });
+  });
+};
+
+
 MC.group = function(params) {
   return new Promise(function(res, err) {
-    if (!params.db || !params.collection || !params.fields) return err("!params.db || !params.collection || !params.func");
+    if (!params.db || !params.collection || !params.fields) return err("!params.db || !params.collection || !params.fields");
 
     var agrQuery = [];
 
@@ -47,7 +112,7 @@ MC.group = function(params) {
       db.collection(params.collection).aggregate(agrQuery, function(e, docs) {
         if (e) return err(e);
 
-        docs = docs.map(function (a) {
+        docs = docs.map(function(a) {
           return a._id;
         });
 
@@ -101,11 +166,11 @@ MC.each = function(params) {
           });
 
         } catch (error) {
-          if(error) {
-            if(errors[error.toString()]) errors[error.toString()]++;
+          if (error) {
+            if (errors[error.toString()]) errors[error.toString()]++;
             else errors[error.toString()] = 1;
           }
-        }        
+        }
       });
     });
   });
