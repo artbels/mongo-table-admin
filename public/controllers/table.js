@@ -92,7 +92,7 @@ function printTable(arr, params) {
     autoColSize: true,
     contextMenu: ['remove_row'],
     comments: false,
-    columnSorting: true,
+    // columnSorting: true,
     afterChange: afterChange,
     afterRemoveRow: afterRemoveRow
   });
