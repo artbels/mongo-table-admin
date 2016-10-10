@@ -1,291 +1,271 @@
-(function() {
+;(function () {
+  var HH = this.HH = {}
 
-
-  var HH = this.HH = {};
-
-  HH.reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i;
-
+  HH.reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i
 
   HH.typesMap = {
-    "string": "text",
-    "number": "numeric",
-    "boolean": "checkbox",
-    "object": "text",
-    "date": "date"
-  };
+    'string': 'text',
+    'number': 'numeric',
+    'boolean': 'checkbox',
+    'object': 'text',
+    'date': 'date'
+  }
 
+  HH.servProps = ['_id', 'updatedAt', '_updated_at', 'createdAt', '_created_at']
 
-  HH.servProps = ["_id", "updatedAt", "_updated_at", "createdAt", "_created_at"];
-
-
-  HH.updateIdArr = function(data, colHeaders) {
-    var idArr = [];
+  HH.updateIdArr = function (data, colHeaders) {
+    var idArr = []
     for (var i = 0; i < data.length; i++) {
-      var item = data[i];
+      var item = data[i]
       for (var j = 0; j < colHeaders.length; j++) {
-        var col = colHeaders[j];
-        if (col == "_id") {
-          idArr.push(item[j]);
+        var col = colHeaders[j]
+        if (col == '_id') {
+          idArr.push(item[j])
         }
       }
     }
-    return idArr;
-  };
+    return idArr
+  }
 
-
-  HH.setColType = function(prop, jsType) {
-
+  HH.setColType = function (prop, jsType) {
     var col = {
       data: prop,
       jsType: jsType
-    };
+    }
 
-    col.type = HH.typesMap[col.jsType];
-    if (prop == "_id") col.readOnly = true;
-    if (col.jsType == "date") col.dateFormat = 'DD-MMM-YYYY';
-    else if (col.jsType == "number") col.format = '0.[0000000000]';
-    return col;
-  };
+    col.type = HH.typesMap[col.jsType]
+    if (prop == '_id') col.readOnly = true
+    if (col.jsType == 'date') col.dateFormat = 'DD-MMM-YYYY'
+    else if (col.jsType == 'number') col.format = '0.[0000000000]'
+    return col
+  }
 
-
-  HH.buildSchema = function(arr) {
-
-    var props = {};
+  HH.buildSchema = function (arr) {
+    var props = {}
 
     var o = {
       columns: [],
       colHeaders: [],
       idArr: []
-    };
+    }
 
     for (var i = 0; i < arr.length; i++) {
-      var row = arr[i];
-      o.idArr.push(row._id);
+      var row = arr[i]
+      o.idArr.push(row._id)
       for (var key in row) {
-        var val = row[key];
-        var jsType = typeof val;
-        if(jsType == "string") {
-          if(HH.reJsStrData.test(val)) jsType = "date";
+        var val = row[key]
+        var jsType = typeof val
+        if (jsType == 'string') {
+          if (HH.reJsStrData.test(val)) jsType = 'date'
         }
-        if (!props[key]) props[key] = jsType;
+        if (!props[key]) props[key] = jsType
       }
     }
 
     for (var prop in props) {
-      var col = HH.setColType(prop, props[prop]);
-      o.columns.push(col);
-      o.colHeaders.push(prop);
+      var col = HH.setColType(prop, props[prop])
+      o.columns.push(col)
+      o.colHeaders.push(prop)
     }
-    return o;
-  };
+    return o
+  }
 
-
-  HH.setDataType = function(data, type) {
-
+  HH.setDataType = function (data, type) {
     switch (type) {
-      case "number":
-        if (isNaN(data)) data = undefined;
-        else data = Number(data);
-        break;
+      case 'number':
+        if (isNaN(data)) data = undefined
+        else data = Number(data)
+        break
 
-      case "boolean":
-        data = Boolean(data);
-        break;
+      case 'boolean':
+        data = Boolean(data)
+        break
 
-      case "array":
+      case 'array':
         try {
-          data = JSON.parse(data);
+          data = JSON.parse(data)
         } catch (e) {
-          data = data.split(/,|;|\t/);
+          data = data.split(/,|;|\t/)
         }
-        break;
+        break
 
-      case "object":
+      case 'object':
         try {
-          data = JSON.parse(data);
+          data = JSON.parse(data)
         } catch (e) {
-          console.log(e);
+          console.log(e)
         }
-        break;
+        break
 
-      case "date":
+      case 'date':
         if (data) {
           try {
-            data = new Date(data);
+            data = new Date(data)
           } catch (e) {
-            console.log(e);
+            console.log(e)
           }
         }
-        break;
+        break
     }
-    return data;
-  };
+    return data
+  }
 
-
-  HH.workChanges = function(changes, arr, columns) {
-    if (!changes) return;
+  HH.workChanges = function (changes, arr, columns) {
+    if (!changes) return
 
     var o = {
       new: {},
       upd: {}
-    };
+    }
 
     for (var i = 0; i < changes.length; i++) {
-      var change = changes[i];
+      var change = changes[i]
 
-      var oldValue = change[2];
-      var newValue = change[3];
-      var changed = (oldValue != newValue);
+      var oldValue = change[2]
+      var newValue = change[3]
+      var changed = (oldValue != newValue)
 
-      if (!changed) continue;
+      if (!changed) continue
 
-      var rowNum = Number(change[0]);
-      var field = change[1];
-      var fieldType;
+      var rowNum = Number(change[0])
+      var field = change[1]
+      var fieldType
       for (var t = 0; t < columns.length; t++) {
-        var col = columns[t];
-        if (col.data == field) fieldType = col.jsType;
+        var col = columns[t]
+        if (col.data == field) fieldType = col.jsType
       }
-      var setId = (field === "_id");
-      if (setId) continue;
+      var setId = (field === '_id')
+      if (setId) continue
 
-      var docId = arr[rowNum]._id;
+      var docId = arr[rowNum]._id
 
       if (docId) {
-        o.upd[rowNum] = o.upd[rowNum] || {};
-        o.upd[rowNum][field] = HH.setDataType(newValue, fieldType);
+        o.upd[rowNum] = o.upd[rowNum] || {}
+        o.upd[rowNum][field] = HH.setDataType(newValue, fieldType)
       } else {
-        o.new[rowNum] = o.new[rowNum] || {};
-        o.new[rowNum][field] = HH.setDataType(newValue, fieldType);
+        o.new[rowNum] = o.new[rowNum] || {}
+        o.new[rowNum][field] = HH.setDataType(newValue, fieldType)
       }
     }
 
-    o.newArr = Object.keys(o.new);
-    o.updArr = Object.keys(o.upd);
+    o.newArr = Object.keys(o.new)
+    o.updArr = Object.keys(o.upd)
 
-    return o;
-  };
+    return o
+  }
 
-
-
-  HH.convArrArrToArrObj = function(hotData, minSpareRows, colHeaders, columns) {
-    var arr = [];
+  HH.convArrArrToArrObj = function (hotData, minSpareRows, colHeaders, columns) {
+    var arr = []
 
     for (var i = 0; i < hotData.length - minSpareRows; i++) {
-      var row = hotData[i];
-      var o = {};
-      var allRowsEmpty = true;
+      var row = hotData[i]
+      var o = {}
+      var allRowsEmpty = true
       for (var j = 0; j < row.length; j++) {
-        var cell = row[j];
-        var prop = colHeaders[j];
-        var type = columns[j].jsType;
+        var cell = row[j]
+        var prop = colHeaders[j]
+        var type = columns[j].jsType
 
-        if ((typeof cell === "undefined") || (cell === null)) continue;
-        allRowsEmpty = false;
+        if ((typeof cell === 'undefined') || (cell === null)) continue
+        allRowsEmpty = false
 
         switch (type) {
-          case "number":
-            if (isNaN(cell)) cell = undefined;
-            else cell = Number(cell);
-            break;
+          case 'number':
+            if (isNaN(cell)) cell = undefined
+            else cell = Number(cell)
+            break
 
-          case "boolean":
-            cell = Boolean(cell);
-            break;
+          case 'boolean':
+            cell = Boolean(cell)
+            break
 
-          case "array":
+          case 'array':
             try {
-              cell = JSON.parse(cell);
+              cell = JSON.parse(cell)
             } catch (e) {
-              cell = cell.split(/,|;|\t/);
+              cell = cell.split(/,|;|\t/)
             }
-            break;
+            break
 
-          case "object":
+          case 'object':
             try {
-              cell = JSON.parse(cell);
+              cell = JSON.parse(cell)
             } catch (e) {
-              console.log(e);
+              console.log(e)
             }
-            break;
+            break
 
-          case "date":
+          case 'date':
             if (cell) {
               try {
-                cell = new Date(cell);
+                cell = new Date(cell)
               } catch (e) {
-                console.log(e);
+                console.log(e)
               }
             }
-            break;
+            break
         }
 
-        o[prop] = cell;
+        o[prop] = cell
       }
-      if (!allRowsEmpty) arr.push(o);
+      if (!allRowsEmpty) arr.push(o)
     }
-    return arr;
-  };
+    return arr
+  }
 
-
-  HH.buildParseSchema = function(columns, colHeaders) {
-    var schemeObj = {};
+  HH.buildParseSchema = function (columns, colHeaders) {
+    var schemeObj = {}
 
     for (var i = 0; i < columns.length; i++) {
-      var item = columns[i];
+      var item = columns[i]
       schemeObj[colHeaders[i]] = {
         type: item.jsType
-      };
+      }
     }
-    return schemeObj;
-  };
+    return schemeObj
+  }
 
-
-  HH.stringifyArrObj = function(arr) {
-
-    if ((!arr) && (typeof(arr[0]) != "object")) {
-      return;
+  HH.stringifyArrObj = function (arr) {
+    if ((!arr) && (typeof (arr[0]) != 'object')) {
+      return
     }
 
     for (var i = 0; i < arr.length; i++) {
-      var row = arr[i];
+      var row = arr[i]
       for (var key in row) {
-        var cell = row[key];
-        var type = typeof cell;
-        var isDate = HH.reJsStrData.test(cell);
-        
-        if (type == "object") arr[i][key] = JSON.stringify(cell);
-        else if(isDate) arr[i][key] = moment(new Date(cell)).format('DD-MMM-YYYY');
+        var cell = row[key]
+        var type = typeof cell
+        var isDate = HH.reJsStrData.test(cell)
 
+        if (type == 'object') arr[i][key] = JSON.stringify(cell)
+        else if (isDate) arr[i][key] = moment(new Date(cell)).format('DD-MMM-YYYY')
       }
     }
-    return arr;
-  };
+    return arr
+  }
 
-
-  HH.convArrObjArrArr = function(arr) {
-    var uniqColumns = {};
-    var finArr = []; 
+  HH.convArrObjArrArr = function (arr) {
+    var uniqColumns = {}
+    var finArr = []
 
     for (var i = 0; i < arr.length; i++) {
       for (var key in arr[i]) {
-        uniqColumns[key] = true;
+        uniqColumns[key] = true
       }
     }
 
-    var columns = Object.keys(uniqColumns);
-    finArr.push(columns);
+    var columns = Object.keys(uniqColumns)
+    finArr.push(columns)
 
     for (var j = 0; j < arr.length; j++) {
-      var row = arr[j];
-      var rowArr = [];
+      var row = arr[j]
+      var rowArr = []
       for (var col in uniqColumns) {
-        var cell = row[col];
-        rowArr.push(cell);
+        var cell = row[col]
+        rowArr.push(cell)
       }
-      finArr.push(rowArr);
+      finArr.push(rowArr)
     }
-    return finArr;
-  };
-
-})();
+    return finArr
+  }
+})()

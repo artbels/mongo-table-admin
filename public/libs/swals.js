@@ -1,566 +1,539 @@
-(function() {
+;(function () {
+  var Swals = this.Swals = {}
 
-  var Swals = this.Swals = {};
-
-  Swals.tooMuchRows = function(controlNode, params, num) {
+  Swals.tooMuchRows = function (controlNode, params, num) {
     swal({
-      title: num + " rows found",
+      title: num + ' rows found',
       showConfirmButton: false,
       html: "<p>What do you want to do?</p><div id='swal-div'></div>",
-      onOpen: function() {
-
-        var swalNode = document.querySelector("#swal-div");
-
-        UI.button({
-          innerHTML: "Load 100",
-          id: "load-100",
-          className: "btn btn-primary",
-          parent: swalNode,
-
-        }, function() {
-          params.limit = 100;
-          getDataMongo(params);
-          swal.close();
-        });
+      onOpen: function () {
+        var swalNode = document.querySelector('#swal-div')
 
         UI.button({
-          innerHTML: "Set query",
-          id: "set-query",
-          className: "btn btn-success",
-          parent: swalNode,
+          innerHTML: 'Load 100',
+          id: 'load-100',
+          className: 'btn btn-primary',
+          parent: swalNode
 
-        }, function() {
-          Swals.buildQuery(controlNode, params);
-        });
+        }, function () {
+          params.limit = 100
+          getDataMongo(params)
+          swal.close()
+        })
 
         UI.button({
-          innerHTML: "Load all",
-          id: "load-all",
-          className: "btn btn-secondary",
-          parent: swalNode,
+          innerHTML: 'Set query',
+          id: 'set-query',
+          className: 'btn btn-success',
+          parent: swalNode
 
-        }, function() {
-          spinner.spin(document.querySelector("#table-container"));
-          swal.close();
-          getDataMongo(params);
-        });
+        }, function () {
+          Swals.buildQuery(controlNode, params)
+        })
+
+        UI.button({
+          innerHTML: 'Load all',
+          id: 'load-all',
+          className: 'btn btn-secondary',
+          parent: swalNode
+
+        }, function () {
+          spinner.spin(document.querySelector('#table-container'))
+          swal.close()
+          getDataMongo(params)
+        })
       }
-    }).catch(function() {});
-  };
+    }).catch(function () {})
+  }
 
-
-  Swals.buildQuery = function(controlNode, params) {
-
-    var queryNode;
-    var html = "<textarea  id='query' cols='45' rows='9' style='font-family: monospace; font-size: 16px'></textarea>";
-    html += '<br><a id="add-projection" href="#" style="font-size: 80%;">edit projection</a><br>';
-    html += "<textarea  id='projection' cols='45' rows='3' style='font-family: monospace; font-size: 16px' hidden>{}</textarea>";
-    html += "<div id='swal-div'></div>";
+  Swals.buildQuery = function (controlNode, params) {
+    var queryNode
+    var html = "<textarea  id='query' cols='45' rows='9' style='font-family: monospace; font-size: 16px'></textarea>"
+    html += '<br><a id="add-projection" href="#" style="font-size: 80%;">edit projection</a><br>'
+    html += "<textarea  id='projection' cols='45' rows='3' style='font-family: monospace; font-size: 16px' hidden>{}</textarea>"
+    html += "<div id='swal-div'></div>"
     swal({
-      title: "Valid JSON please",
+      title: 'Valid JSON please',
       showCancelButton: false,
       showConfirmButton: false,
       html: html,
-      onOpen: function() {
-        queryNode = document.querySelector("#query");
-        queryNode.value = localStorage["query" + params.db + params.collection];
+      onOpen: function () {
+        queryNode = document.querySelector('#query')
+        queryNode.value = localStorage['query' + params.db + params.collection]
 
-        var swalNode = document.querySelector("#swal-div");
+        var swalNode = document.querySelector('#swal-div')
 
-        var addProjNode = document.querySelector("#add-projection");
-        var projNode = document.querySelector("#projection");
-        projNode.value = localStorage["projection" + params.db + params.collection];
+        var addProjNode = document.querySelector('#add-projection')
+        var projNode = document.querySelector('#projection')
+        projNode.value = localStorage['projection' + params.db + params.collection]
 
-        addProjNode.onclick = function() {
-          if (addProjNode.innerHTML == "edit projection") {
-            addProjNode.innerHTML = "hide projection";
-            projNode.hidden = false;
+        addProjNode.onclick = function () {
+          if (addProjNode.innerHTML == 'edit projection') {
+            addProjNode.innerHTML = 'hide projection'
+            projNode.hidden = false
           } else {
-            addProjNode.innerHTML = "edit projection";
-            projNode.hidden = true;
+            addProjNode.innerHTML = 'edit projection'
+            projNode.hidden = true
           }
-        };
-
+        }
 
         UI.button({
-          innerHTML: "Find matching",
-          id: "find",
-          className: "btn btn-primary",
-          parent: swalNode,
+          innerHTML: 'Find matching',
+          id: 'find',
+          className: 'btn btn-primary',
+          parent: swalNode
 
-        }, function() {
+        }, function () {
           var query = {},
-            projection = {};
+            projection = {}
           try {
-            query = JSON.parse(queryNode.value);
-            localStorage["query" + params.db + params.collection] = JSON.stringify(query);
-            params.query = JSON.stringify(query);
+            query = JSON.parse(queryNode.value)
+            localStorage['query' + params.db + params.collection] = JSON.stringify(query)
+            params.query = JSON.stringify(query)
 
-            projection = JSON.parse(projNode.value);
-            localStorage["projection" + params.db + params.collection] = JSON.stringify(projection);
-            params.projection = JSON.stringify(projection);
+            projection = JSON.parse(projNode.value)
+            localStorage['projection' + params.db + params.collection] = JSON.stringify(projection)
+            params.projection = JSON.stringify(projection)
 
-            location.reload();
+            location.reload()
           } catch (e) {
-            console.warn(e);
+            console.warn(e)
           }
-          swal.close();
-        });
+          swal.close()
+        })
 
         UI.button({
-          innerHTML: "Remove",
-          id: "remove",
-          className: "btn btn-danger",
-          parent: swalNode,
+          innerHTML: 'Remove',
+          id: 'remove',
+          className: 'btn btn-danger',
+          parent: swalNode
 
-        }, function() {
-
+        }, function () {
           swal({
-            type: "warning",
+            type: 'warning',
             html: "Are you sure? Delete operation can't be reverted.",
             showCancelButton: true,
-            confirmButtonText: "Yes, do it"
-          }).then(function() {
-            var query = {};
+            confirmButtonText: 'Yes, do it'
+          }).then(function () {
+            var query = {}
             try {
-              query = JSON.parse(queryNode.value);
-              localStorage["query" + params.db + params.collection] = "{}";
-              params.query = JSON.stringify(query);
+              query = JSON.parse(queryNode.value)
+              localStorage['query' + params.db + params.collection] = '{}'
+              params.query = JSON.stringify(query)
 
-              $.post("/mongo/remove", params, function(r) {
+              $.post('/mongo/remove', params, function (r) {
                 if (r && r.ok && (r.ok == 1)) {
-                  location.reload();
-
-                } else statusNode.innerHTML = JSON.stringify(r);
-              });
-
+                  location.reload()
+                } else statusNode.innerHTML = JSON.stringify(r)
+              })
             } catch (e) {
-              console.warn(e);
+              console.warn(e)
             }
-            swal.close();
-          }).catch(function() {});
-        });
+            swal.close()
+          }).catch(function () {})
+        })
 
-        Controls.cancelSwal(swalNode);
+        Controls.cancelSwal(swalNode)
       }
 
-    }).then(function() {}).catch(function() {});
-  };
+    }).then(function () {}).catch(function () {})
+  }
 
-
-  Swals.dropCollection = function(params) {
-
-    if (typeof params == "string") {
+  Swals.dropCollection = function (params) {
+    if (typeof params == 'string') {
       params = {
-        db: localStorage["input#db-path"],
+        db: localStorage['input#db-path'],
         collection: params
-      };
+      }
     }
 
     swal({
-      title: "Drop collection?",
-      type: "warning",
+      title: 'Drop collection?',
+      type: 'warning',
       showCancelButton: true
-    }).then(function() {
-      $.post("/mongo/dropcollection", params, function(r) {
-        if (r) window.location.href = "/";
-      });
-    }).catch(function() {});
-  };
+    }).then(function () {
+      $.post('/mongo/dropcollection', params, function (r) {
+        if (r) window.location.href = '/'
+      })
+    }).catch(function () {})
+  }
 
-
-  Swals.renameField = function(params, hot) {
+  Swals.renameField = function (params, hot) {
     swal({
-      title: "Rename field",
+      title: 'Rename field',
       html: "<div id='swal-div' align='center'></div>",
       showCancelButton: true,
-      onOpen: function(r) {
-        var swalNode = document.querySelector("#swal-div");
+      onOpen: function (r) {
+        var swalNode = document.querySelector('#swal-div')
 
-        var noIdColHeaders = hot.getColHeader().filter(function(r) {
-          if (r != "_id") return r;
-        });
+        var noIdColHeaders = hot.getColHeader().filter(function (r) {
+          if (r != '_id') return r
+        })
 
         UI.select(noIdColHeaders, {
-          id: "field-to-rename",
+          id: 'field-to-rename',
           parent: swalNode
-        }, function(jsType) {});
+        }, function (jsType) {})
 
         UI.br({
-          id: "field-to-rename-br",
+          id: 'field-to-rename-br',
           parent: swalNode
-        });
+        })
 
         UI.input({
-          placeholder: "New name",
-          id: "new-name",
-          value: "",
-          className: "",
+          placeholder: 'New name',
+          id: 'new-name',
+          value: '',
+          className: '',
           parent: swalNode,
           style: {
-            width: "180px",
-            textAlign: "center"
+            width: '180px',
+            textAlign: 'center'
           }
-        });
+        })
       }
-    }).then(function() {
-      params.old = document.querySelector("#field-to-renameSelect").value;
-      params.new = document.querySelector("#new-name").value;
+    }).then(function () {
+      params.old = document.querySelector('#field-to-renameSelect').value
+      params.new = document.querySelector('#new-name').value
 
       if (!params.old || !params.new) {
         return swal({
-          type: "warning",
-          title: "no new or old"
-        });
+          type: 'warning',
+          title: 'no new or old'
+        })
       }
 
-      $.post("/mongo/rename", params, function(r) {
+      $.post('/mongo/rename', params, function (r) {
         if (r && r.ok && (r.ok == 1)) {
-          location.reload();
-        } else alert(JSON.stringify(r));
-      });
-    }).catch(function() {});
-  };
+          location.reload()
+        } else alert(JSON.stringify(r))
+      })
+    }).catch(function () {})
+  }
 
-
-  Swals.addField = function(columns, hot) {
+  Swals.addField = function (columns, hot) {
     swal({
-      title: "Add column",
+      title: 'Add column',
       html: "<div id='swal-div' align='center'></div>",
       showCancelButton: true,
-      onOpen: function(r) {
-        var swalNode = document.querySelector("#swal-div");
+      onOpen: function (r) {
+        var swalNode = document.querySelector('#swal-div')
 
         UI.input({
-          placeholder: "Field name",
-          id: "field-name",
-          className: "",
+          placeholder: 'Field name',
+          id: 'field-name',
+          className: '',
           parent: swalNode,
-          value: "",
+          value: '',
           style: {
-            width: "180px",
-            textAlign: "center"
+            width: '180px',
+            textAlign: 'center'
           }
-        });
+        })
 
-        document.querySelector("#field-name").onkeyup = checkFieldExist;
-        document.querySelector("#field-name").onchange = checkFieldExist;
+        document.querySelector('#field-name').onkeyup = checkFieldExist
+        document.querySelector('#field-name').onchange = checkFieldExist
 
-        function checkFieldExist() {
-          var fieldName = document.querySelector("#field-name").value;
+        function checkFieldExist () {
+          var fieldName = document.querySelector('#field-name').value
           if (hot.getColHeader().indexOf(fieldName) != -1) {
-            swal.showValidationError(fieldName + " is already exists");
-            swal.disableButtons();
+            swal.showValidationError(fieldName + ' is already exists')
+            swal.disableButtons()
           } else {
-            swal.resetValidationError();
-            swal.enableButtons();
+            swal.resetValidationError()
+            swal.enableButtons()
           }
         }
 
         UI.br({
-          id: "add-column-span",
+          id: 'add-column-span',
           parent: swalNode
-        });
+        })
 
         UI.select(Object.keys(HH.typesMap), {
-          placeholder: "Field type",
-          id: "field-type",
+          placeholder: 'Field type',
+          id: 'field-type',
           parent: swalNode
-        }, function(jsType) {});
+        }, function (jsType) {})
 
-        document.querySelector("#field-typeSelect").value = "string";
+        document.querySelector('#field-typeSelect').value = 'string'
       }
-    }).then(function() {
-      var propNode = document.querySelector("#field-name");
-      var jsTypeNode = document.querySelector("#field-typeSelect");
+    }).then(function () {
+      var propNode = document.querySelector('#field-name')
+      var jsTypeNode = document.querySelector('#field-typeSelect')
 
       if (!propNode || !propNode.value) {
         return swal({
-          type: "warning",
-          title: "no field name"
-        });
+          type: 'warning',
+          title: 'no field name'
+        })
       }
 
       if (colHeaders.indexOf(propNode.value) != -1) {
         return swal({
-          type: "warning",
-          title: propNode.value + " already exists"
-        });
+          type: 'warning',
+          title: propNode.value + ' already exists'
+        })
       }
 
-      var col = HH.setColType(propNode.value, jsTypeNode.value || "string");
+      var col = HH.setColType(propNode.value, jsTypeNode.value || 'string')
 
-      columns.push(col);
-      colHeaders.push(col.data);
+      columns.push(col)
+      colHeaders.push(col.data)
 
       hot.updateSettings({
         colHeaders: colHeaders,
         columns: columns
-      });
-    }).catch(function() {});
-  };
+      })
+    }).catch(function () {})
+  }
 
-
-  Swals.getDistinct = function(params, hot) {
+  Swals.getDistinct = function (params, hot) {
     swal({
-      title: "Get distinct values",
+      title: 'Get distinct values',
       showCancelButton: true,
       html: "<div id='swal-div' align='center'></div>",
-      onOpen: function() {
-        var swalNode = document.querySelector("#swal-div");
+      onOpen: function () {
+        var swalNode = document.querySelector('#swal-div')
 
-        var noIdColHeaders = hot.getColHeader().filter(function(r) {
-          if (r != "_id") return r;
-        });
+        var noIdColHeaders = hot.getColHeader().filter(function (r) {
+          if (r != '_id') return r
+        })
 
         UI.select(noIdColHeaders, {
-          id: "field-to-distinct",
+          id: 'field-to-distinct',
           parent: swalNode
-        }, function(jsType) {});
-
+        }, function (jsType) {})
       }
-    }).then(function() {
-      params.field = document.querySelector("#field-to-distinctSelect").value;
+    }).then(function () {
+      params.field = document.querySelector('#field-to-distinctSelect').value
 
       if (!params.field) {
         return swal({
-          type: "warning",
-          title: "no field to distinct"
-        });
+          type: 'warning',
+          title: 'no field to distinct'
+        })
       }
 
-      $.post("/mongo/distinct", params, function(arr) {
-
+      $.post('/mongo/distinct', params, function (arr) {
         if (arr.length > 200) {
-          console.log(JSON.stringify(arr));
+          console.log(JSON.stringify(arr))
 
           return swal({
-            title: "More than 200",
+            title: 'More than 200',
             timer: 500,
-            type: "warning"
-          }).done();
+            type: 'warning'
+          }).done()
         }
 
         swal({
-          title: "Distinct values:",
-          html: arr.join(", "),
-          type: "success"
-        }).done();
+          title: 'Distinct values:',
+          html: arr.join(', '),
+          type: 'success'
+        }).done()
+      })
+    }).catch(function () {})
+  }
 
-      });
-    }).catch(function() {});
-  };
-
-
-  Swals.deleteField = function(params, hot) {
+  Swals.deleteField = function (params, hot) {
     swal({
-      title: "Delete field",
+      title: 'Delete field',
       showCancelButton: true,
       html: "<div id='swal-div' align='center'></div>",
-      onOpen: function() {
-        var swalNode = document.querySelector("#swal-div");
+      onOpen: function () {
+        var swalNode = document.querySelector('#swal-div')
 
-        var noIdColHeaders = hot.getColHeader().filter(function(r) {
-          if (r != "_id") return r;
-        });
+        var noIdColHeaders = hot.getColHeader().filter(function (r) {
+          if (r != '_id') return r
+        })
 
         UI.select(noIdColHeaders, {
-          id: "field-to-delete",
+          id: 'field-to-delete',
           parent: swalNode
-        }, function(jsType) {});
+        }, function (jsType) {})
 
-        // document.querySelector("#field-to-deleteSelect").value = noIdColHeaders.pop();
+        // document.querySelector("#field-to-deleteSelect").value = noIdColHeaders.pop()
 
       }
-    }).then(function() {
-      params.field = document.querySelector("#field-to-deleteSelect").value;
+    }).then(function () {
+      params.field = document.querySelector('#field-to-deleteSelect').value
 
       if (!params.field) {
         return swal({
-          type: "warning",
-          title: "no field to delete"
-        });
+          type: 'warning',
+          title: 'no field to delete'
+        })
       }
 
-      $.post("/mongo/unsetfield", params, function(r) {
+      $.post('/mongo/unsetfield', params, function (r) {
         if (r && r.ok && (r.ok == 1)) {
-          location.reload();
-        } else statusNode.innerHTML = JSON.stringify(r);
-      });
-    }).catch(function() {});
-  };
+          location.reload()
+        } else statusNode.innerHTML = JSON.stringify(r)
+      })
+    }).catch(function () {})
+  }
 
+  Swals.chooseCollection = function (list) {
+    spinner.spin(document.body)
 
-  Swals.chooseCollection = function(list) {
-    spinner.spin(document.body);
+    var dbPath = localStorage['input#db-path']
+    var i = 0
+    var l = list.length
+    var collArr = []
 
-    var dbPath = localStorage["input#db-path"];
-    var i = 0;
-    var l = list.length;
-    var collArr = [];
+    ;(function next () {
+      var name = list[i].name
+      var currDbName = dbPath.split(/\//).pop()
 
-    (function next() {
-      var name = list[i].name;
-      var currDbName = dbPath.split(/\//).pop();
-
-      $.post("/mongo/collectionstats", {
+      $.post('/mongo/collectionstats', {
         db: dbPath,
         collection: name
-      }, function(r) {
+      }, function (r) {
+        var sizeStr
+        var sizeKb = r.size / 1024
 
-        var sizeStr;
-        var sizeKb = r.size / 1024;
-
-        if (sizeKb > 100000) sizeStr = (sizeKb / 1024 / 1024).toFixed(1) + "GB";
-        else if (sizeKb > 100) sizeStr = (sizeKb / 1024).toFixed(1) + "MB";
-        else sizeStr = (sizeKb).toFixed(1) + "KB";
+        if (sizeKb > 100000) sizeStr = (sizeKb / 1024 / 1024).toFixed(1) + 'GB'
+        else if (sizeKb > 100) sizeStr = (sizeKb / 1024).toFixed(1) + 'MB'
+        else sizeStr = (sizeKb).toFixed(1) + 'KB'
 
         var collObj = {
           collection: name,
           documents: r.count,
           size: sizeStr,
-          table: "<a href='/" + currDbName + "/" + name + "/table" + "'>" + "table" + "</a>",
-          pivot: "<a href='/" + currDbName + "/" + name + "/pivot" + "'>" + "pivot" + "</a>",
-          x: "<a href='#' onclick='Swals.dropCollection(\"" + name + "\")'>x</a>",
-        };
+          table: "<a href='/" + currDbName + '/' + name + '/table' + "'>" + 'table' + '</a>',
+          pivot: "<a href='/" + currDbName + '/' + name + '/pivot' + "'>" + 'pivot' + '</a>',
+          x: '<a href=\'#\' onclick=\'Swals.dropCollection("' + name + '")\'>x</a>'
+        }
 
-        collArr.push(collObj);
+        collArr.push(collObj)
 
-        i++;
+        i++
 
         if (i < l) {
-          next();
+          next()
         } else {
-
           swal({
-            title: "Choose collection",
+            title: 'Choose collection',
             html: "<div id='swal-div' align='center'></div>",
             showConfirmButton: false,
             width: 700,
-            onOpen: function() {
-
-              var swalDivNode = document.querySelector("#swal-div");
-
+            onOpen: function () {
+              var swalDivNode = document.querySelector('#swal-div')
 
               UI.table(collArr, {
                 parent: swalDivNode,
                 hideHead: true
-              });
+              })
             }
-          }).catch(function() {});
-          spinner.stop();
+          }).catch(function () {})
+          spinner.stop()
         }
-      });
-    })();
-  };
+      })
+    })()
+  }
 
-
-  Swals.dbPath = function() {
-    var html = "Please enter mongo url<div id='swal-div' align='center'></div>";
-    html += '<a href="#" style = "font-size:80%;" onclick="document.querySelector(\'#db-path\').value = \'mongodb://localhost:27017/test\';">ex. mongodb://localhost:27017/test</a>';
+  Swals.dbPath = function () {
+    var html = "Please enter mongo url<div id='swal-div' align='center'></div>"
+    html += '<a href="#" style = "font-size:80%;" onclick="document.querySelector(\'#db-path\').value = \'mongodb://localhost:27017/test\';">ex. mongodb://localhost:27017/test</a>'
 
     swal({
       // title: "Mongo URL",
       html: html,
       allowOutsideClick: false,
       allowEscapeKey: false,
-      onOpen: function() {
-        var swalDivNode = document.querySelector("#swal-div");
+      onOpen: function () {
+        var swalDivNode = document.querySelector('#swal-div')
 
         UI.input({
           parent: swalDivNode,
-          id: "db-path",
+          id: 'db-path',
           placeholder: 'mongodb://localhost:27017/test',
           style: {
             fontSize: '100%',
-            textAlign: "center",
-            width: "420px"
+            textAlign: 'center',
+            width: '420px'
           }
-        });
+        })
       }
-    }).then(function() {
-      localStorage["input#db-path"] = document.querySelector('#db-path').value;
-      Controls.collections();
-    }).catch(function() {});
-  };
+    }).then(function () {
+      localStorage['input#db-path'] = document.querySelector('#db-path').value
+      Controls.collections()
+    }).catch(function () {})
+  }
 
-
-  Swals.chooseDb = function(list) {
+  Swals.chooseDb = function (list) {
     swal({
-      title: "Choose Database",
+      title: 'Choose Database',
       html: "<div id='swal-div' align='center'></div>",
       showConfirmButton: false,
-      onOpen: function() {
+      onOpen: function () {
+        var swalDivNode = document.querySelector('#swal-div')
 
-        var swalDivNode = document.querySelector("#swal-div");
+        var i = 0
+        var l = list.databases.length
 
-        var i = 0;
-        var l = list.databases.length;
+        ;(function next () {
+          var dbName = list.databases[i].name
+          var size = list.databases[i].sizeOnDisk / 1024 / 1024
+          var sizeStr
 
-        (function next() {
-          var dbName = list.databases[i].name;
-          var size = list.databases[i].sizeOnDisk / 1024 / 1024;
-          var sizeStr;
-
-          if (size > 100) sizeStr = (size / 1024).toFixed(2) + "GB";
-          else sizeStr = (size).toFixed(2) + "MB";
+          if (size > 100) sizeStr = (size / 1024).toFixed(2) + 'GB'
+          else sizeStr = (size).toFixed(2) + 'MB'
 
           UI.button({
             parent: swalDivNode,
-            innerHTML: dbName + ", " + sizeStr,
+            innerHTML: dbName + ', ' + sizeStr,
             id: dbName,
             style: {
-              marginRight: "10px"
+              marginRight: '10px'
             }
-          }, function(r) {
-            var reUrl = /^mongodb\:\/\/([\w\d\-\_]+)(\:\d+)?(\/.*)?$/;
+          }, function (r) {
+            var reUrl = /^mongodb\:\/\/([\w\d\-\_]+)(\:\d+)?(\/.*)?$/
 
-            var currPath = localStorage["input#db-path"];
-            var currDbName = currPath.match(reUrl)[3];
-            var urlWithoutDb = currPath.replace(currDbName, "").replace(/\/$/, '');
+            var currPath = localStorage['input#db-path']
+            var currDbName = currPath.match(reUrl)[3]
+            var urlWithoutDb = currPath.replace(currDbName, '').replace(/\/$/, '')
 
-            localStorage["input#db-path"] = urlWithoutDb + "/" + r;
-            Controls.collections();
-          });
+            localStorage['input#db-path'] = urlWithoutDb + '/' + r
+            Controls.collections()
+          })
 
-          i++;
+          i++
 
-          if (i < l) next();
+          if (i < l) next()
+        })()
 
-        })();
-
-        UI.br(swalDivNode);
+        UI.br(swalDivNode)
 
         UI.button({
           parent: swalDivNode,
-          id: "change-db-path",
-          className: "btn btn-primary",
-          innerHTML: 'Change DB Path',
-        }, function() {
-          Swals.dbPath();
-        });
+          id: 'change-db-path',
+          className: 'btn btn-primary',
+          innerHTML: 'Change DB Path'
+        }, function () {
+          Swals.dbPath()
+        })
       }
-    }).catch(function() {});
-  };
+    }).catch(function () {})
+  }
 
-  Swals.saveDataMongo = function(arr) {
-
-    var html = "Enter mongo url and collection name";
-    html += "<div align='center' id='swal-div'></div>";
-    html += "<div align='center' id='swal-div'></div>";
+  Swals.saveDataMongo = function (arr) {
+    var html = 'Enter mongo url and collection name'
+    html += "<div align='center' id='swal-div'></div>"
+    html += "<div align='center' id='swal-div'></div>"
 
     swal({
       // title: "Mongo URL",
       html: html,
       allowEscapeKey: false,
       showConfirmButton: false,
-      onOpen: function() {
-        var swalDiv = document.querySelector("#swal-div");
-        var params = Controls.getCollectionFromUrl();
+      onOpen: function () {
+        var swalDiv = document.querySelector('#swal-div')
+        var params = Controls.getCollectionFromUrl()
 
         UI.input({
           parent: swalDiv,
-          id: "db-path",
+          id: 'db-path',
           placeholder: 'mongodb://localhost:27017/test',
           value: params.db,
           style: {
@@ -568,86 +541,255 @@
             fontSize: '100%',
             textAlign: 'center'
           }
-        });
+        })
 
         UI.input({
           parent: swalDiv,
-          id: "collection",
+          id: 'collection',
           placeholder: 'collection',
-          value: params.collection || localStorage["input#collection"],
+          value: params.collection || localStorage['input#collection'],
           style: {
             fontSize: '120%',
             textAlign: 'center'
           }
-        });
+        })
 
         UI.button({
           parent: swalDiv,
-          id: "save-arr",
+          id: 'save-arr',
           innerHTML: 'Save',
           className: 'btn btn-primary'
-        }, function() {
-
+        }, function () {
           if (arr && arr.length)
-            saveArrMongoChunks(arr);
+            saveArrMongoChunks(arr)
           else
             swal({
-              title: "nothing to save!",
+              title: 'nothing to save!',
               timer: 800,
-              type: "warning"
-            }).done();
-        });
+              type: 'warning'
+            }).done()
+        })
 
         UI.button({
           parent: swalDiv,
-          id: "cancel",
+          id: 'cancel',
           innerHTML: 'Cancel'
-        }, function() {
-          swal.close();
-        });
+        }, function () {
+          swal.close()
+        })
       }
-    }).catch(function() {});
+    }).catch(function () {})
 
-    function saveArrMongoChunks(arr) {
-
+    function saveArrMongoChunks (arr) {
       if (!arr || !arr.length) return swal({
-        title: "Nothing to save",
-        timer: 800,
-        type: "warning"
-      }).done();
+          title: 'Nothing to save',
+          timer: 800,
+          type: 'warning'
+        }).done()
 
-      spinner.spin(document.body);
+      spinner.spin(document.body)
 
-      setTimeout(function() {
+      setTimeout(function () {
+        var chunkSize = 10
+        var chunks = Math.ceil(arr.length / chunkSize)
+        var currChunk = 0
 
-        var chunkSize = 10;
-        var chunks = Math.ceil(arr.length / chunkSize);
-        var currChunk = 0;
-
-        (function workChunk() {
-          var start = currChunk * chunkSize;
-          var currArr = arr.slice(start, chunkSize * (currChunk + 1));
+        ;(function workChunk () {
+          var start = currChunk * chunkSize
+          var currArr = arr.slice(start, chunkSize * (currChunk + 1))
 
           var params = {
-            db: document.querySelector("#db-path").value,
-            collection: document.querySelector("#collection").value,
+            db: document.querySelector('#db-path').value,
+            collection: document.querySelector('#collection').value,
             data: JSON.stringify(currArr)
-          };
-          $.post("/mongo/insert", params, function(r) {
+          }
+          $.post('/mongo/insert', params, function (r) {
             if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-
-              currChunk++;
-              if (currChunk < chunks) workChunk();
+              currChunk++
+              if (currChunk < chunks) workChunk()
               else {
-                swal("everything saved!");
-                spinner.stop();
+                swal('everything saved!')
+                spinner.stop()
               }
             }
-          });
-        })();
-      }, 10);
+          })
+        })()
+      }, 10)
     }
-  };
+  }
 
+  Swals.showIndexes = function (params) {
+    T.post('/mongo/indexinfo', params).then(function (r) {
+      var tableArr = []
 
-})();
+      for (var prop in r) {
+        if(prop === "_id_") continue
+        var val = r[prop]
+        tableArr.push({
+          name: prop,
+          index: JSON.stringify(val, null, 2)
+        })
+      }
+
+      if(!tableArr.length) return swal({title: "No indexes found", html: 'except mandatory "_id_"', type: "info"}).done()
+
+      swal({
+        title: 'Indexes list',
+        html: '<div id="sd" align="center"></div>',
+        confirmButtonText: 'Delete selected',
+        showCancelButton: true,
+        onOpen: function () {
+          UI.table(tableArr, {
+            parent: '#sd',
+            id: 'indexes',
+            selectable: true
+          })
+        }
+      }).then(function () {
+        var selNodes = UI.getTableSel('indexes')
+
+        T.iter(selNodes, function (i, cb) {
+          var item = tableArr[i]
+
+          params.index = item.name
+
+          T.post('/mongo/dropindex', params).then(function (r) {
+            // console.log(r)
+            cb(r)
+          })
+        }, {
+          concurrency: 1,
+          cb: function () {
+            swal({title: 'Selected indexes were dropped', type: 'success'}).done()
+          }
+        })
+      }).catch(function () {})
+    })
+  }
+
+  Swals.createIndex = function (params) {
+    document.querySelector('#create-indexes-body').align = 'center'
+
+    document.querySelector('#create-indexes-footer').align = 'center'
+
+    Controls.getSchema(function (r) {
+      var tableArr = []
+      var tableParams = {
+        id: 'create-indexes-table',
+        parent: '#create-indexes-body'
+      }
+
+      for (var prop in r) {
+        if (prop === '_id') continue
+        tableArr.push({
+          field: prop,
+          type: r[prop],
+          indexType: '',
+        // unique: '',
+        // sparce: ''
+        })
+      }
+
+      UI.table(tableArr, tableParams)
+
+      tableArr.forEach(function (a, i) {
+        var fieldType = r[a.field]
+
+        var indexTypes = ['1', '-1']
+
+        if (fieldType === 'string') {
+          indexTypes.push('text')
+        }
+
+        if (fieldType === 'object') {
+          indexTypes.push('2dsphere')
+          indexTypes.push('2d')
+        }
+
+        UI.select(indexTypes, {
+          id: 'index-type-' + i,
+          firstRowText: '...',
+          parent: document.querySelector('table#create-indexes-table > tbody > tr:nth-child(' + (i + 1) + ') > td:nth-child(3)')
+        })
+
+        // UI.checkbox({
+        //   id: 'unique-' + i,
+        //   parent: document.querySelector('table#create-indexes-table > tbody > tr:nth-child(' + (i + 1) + ') > td:nth-child(4)')
+        // })
+
+      // UI.checkbox({
+      //   id: 'sparce-' + i,
+      //   parent: document.querySelector('table#create-indexes-table > tbody > tr:nth-child(' + (i + 1) + ') > td:nth-child(5)')
+      // })
+      })
+
+      // UI.checkbox({
+      //   id: 'compound-index',
+      //   parent: '#create-indexes-body',
+      //   text: 'create compound index'
+      // })
+
+      UI.button({
+        id: 'create-indexes-button',
+        parent: '#create-indexes-footer',
+        innerHTML: 'Create indexes',
+        className: 'btn btn-primary'
+      }, function () {
+        var rowNodes = document.querySelectorAll('table#create-indexes-table > tbody > tr')
+
+        var indexesToCreate = []
+
+        for (var i = 0; i < rowNodes.length; i++) {
+          var o = {
+            indexType: rowNodes[i].querySelector('td:nth-child(3) > select > option:checked').innerHTML
+          }
+          if (o.indexType === '...') continue
+
+          if (['-1', '1'].indexOf(o.indexType) !== -1) o.indexType = Number(o.indexType)
+
+          o.field = rowNodes[i].querySelector('td:nth-child(1)').innerHTML
+
+          // o.uniq = rowNodes[i].querySelector('td:nth-child(4) > input').checked
+
+          // o.sparce = rowNodes[i].querySelector('td:nth-child(5) > input').checked
+
+          indexesToCreate.push(o)
+        }
+
+        // var compound = document.querySelector("#compound-index").checked
+
+        if (indexesToCreate.length) {
+          createIndexesMongo(indexesToCreate, params)
+        } else swal({title: 'nothing to create', type: 'warning'}).done()
+      })
+
+      UI.button({
+        id: 'cancel-button',
+        parent: '#create-indexes-footer',
+        innerHTML: 'Cancel'
+      }, function () {
+        $('#create-indexes').modal('hide')
+      })
+
+      $('#create-indexes').modal()
+    })
+
+    function createIndexesMongo (indexesToCreate, params) {
+      T.iter(indexesToCreate, function (a, cb) {
+        params.index = {}
+        params.index[a.field] = a.indexType
+
+        T.post('/mongo/ensureindex', params).then(function (r) {
+          // console.log(r)
+          cb(r)
+        })
+      }, {
+        concurrency: 1,
+        cb: function () {
+          $('#create-indexes').modal('hide')
+          swal({title: 'Indexes created', type: 'success'}).done()
+        }
+      })
+    }
+  }
+})()

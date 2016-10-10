@@ -18,3 +18,15 @@ hr {
 input[type=file] {
   display: inline; 
 }
+
+input[type=number] {
+  display: inline; 
+}
+
+.modal-header {
+  border-bottom: 0px !important;
+}
+
+.modal-dialog {
+  width: 660px !important;
+}

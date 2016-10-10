@@ -26,18 +26,18 @@ function string2binary(str) {
 
 /**
  * Create a new blob with the given content and the given type.
- * @param {String|ArrayBuffer} part the content to put in the blob. DO NOT use
+ * @param {Array[String|ArrayBuffer]} parts the content to put in the blob. DO NOT use
  * an Uint8Array because the stock browser of android 4 won't accept it (it
  * will be silently converted to a string, "[object Uint8Array]").
  * @param {String} type the mime type of the blob.
  * @return {Blob} the created blob.
  */
-exports.newBlob = function(part, type) {
+exports.newBlob = function(parts, type) {
     exports.checkSupport("blob");
 
     try {
         // Blob constructor
-        return new Blob([part], {
+        return new Blob(parts, {
             type: type
         });
     }
@@ -47,7 +47,9 @@ exports.newBlob = function(part, type) {
             // deprecated, browser only, old way
             var Builder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
             var builder = new Builder();
-            builder.append(part);
+            for (var i = 0; i < parts.length; i++) {
+                builder.append(parts[i]);
+            }
             return builder.getBlob(type);
         }
         catch (e) {
@@ -266,7 +268,13 @@ transform["uint8array"] = {
         return arrayLikeToArrayLike(input, new Array(input.length));
     },
     "arraybuffer": function(input) {
-        return input.buffer;
+        // copy the uint8array: DO NOT propagate the original ArrayBuffer, it
+        // can be way larger (the whole zip file for example).
+        var copy = new Uint8Array(input.length);
+        if (input.length) {
+            copy.set(input, 0);
+        }
+        return copy.buffer;
     },
     "uint8array": identity,
     "nodebuffer": function(input) {
@@ -420,7 +428,11 @@ exports.prepareContent = function(name, inputData, isBinary, isOptimizedBinarySt
 
     // if inputData is already a promise, this flatten it.
     var promise = external.Promise.resolve(inputData).then(function(data) {
-        if (support.blob && data instanceof Blob && typeof FileReader !== "undefined") {
+        
+        
+        var isBlob = support.blob && (data instanceof Blob || ['[object File]', '[object Blob]'].indexOf(Object.prototype.toString.call(data)) !== -1);
+
+        if (isBlob && typeof FileReader !== "undefined") {
             return new external.Promise(function (resolve, reject) {
                 var reader = new FileReader();
 
