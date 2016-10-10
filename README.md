@@ -13,7 +13,7 @@ If you are looking for a full featured mongo admin, please check:
 Rememeber to always back up important data. Everybody can sometimes unintentionally break something.
 
 ### demo
-[try demo on heroku](https://mongo-table-admin.herokuapp.com/)  
+<a href="https://mongo-table-admin.herokuapp.com/" target="_blank">try demo on heroku</a> (give it a moment to wake up)    
 Don't have local mongodb or one with secure url access? Get 500MB free on [mLabs](https://mlab.com/) 
 
 ### features
