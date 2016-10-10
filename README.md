@@ -12,8 +12,8 @@ If you are looking for a full featured mongo admin, please check:
 
 Rememeber to always back up important data. Everybody can sometimes unintentionally break something.
 
-### [try demo on heroku](https://mongo-table-admin.herokuapp.com/)
-
+### demo
+[try demo on heroku](https://mongo-table-admin.herokuapp.com/)  
 Don't have local mongodb or one with secure url access? Get 500MB free on [mLabs](https://mlab.com/) 
 
 ### features
@@ -26,13 +26,11 @@ Don't have local mongodb or one with secure url access? Get 500MB free on [mLabs
 ### installation
 git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin  
 npm start  
-[localhost:12369](http://localhost:12369)
-
+[localhost:12369](http://localhost:12369)  
 
 ### security
 ip control by setting list of IPs in MTA_IPS environment variable  
-export MTA_IPS=
-
+export MTA_IPS=  
 
 ### usage
 
@@ -55,18 +53,17 @@ alt="add rows" width="480" height="270" border="10" /></a>
 alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
-- [x] build query in modal to save space
-- [x] display autosave status
-- [x] choose collection from list
-- [x] show warning if too many documents in collection - choose how many to show or limit by query
-- [x] router - collection in url, type of view, simple filters 
-- [x] set data type on save
-- [x] upload data from json, csv, xls, xlsx and those zipped
-- [ ] test, test, test
+- [x] manage indexes
+- [x] run sync function for every document
+- [x] export/import json
+- [ ] use JQuery QueryBuilder to build queries visually
+- [ ] switch to Handsontable BeforeRemoveRow and BeforeChange events
+- [ ] use ace editor
+- [ ] set limit for query
 
 ### contribution & help
 
-* be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. configure basic auth.
+* be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. configure auth.
 * pull requests are welcome - the code is not great yet, handsontable helper functions need refactoring.
 * found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues).
 * **don't be shy to star my first open source experiment - I promise to smile every time I see it ))**
