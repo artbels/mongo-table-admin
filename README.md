@@ -56,6 +56,7 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [x] manage indexes
 - [x] run sync function for every document
 - [x] export/import json
+- [ ] multiple times faster saving and deleting using concurrent requests and grouping
 - [ ] use JQuery QueryBuilder to build queries visually
 - [ ] switch to Handsontable BeforeRemoveRow and BeforeChange events
 - [ ] use ace editor

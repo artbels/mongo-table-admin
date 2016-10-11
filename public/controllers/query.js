@@ -14,8 +14,6 @@ var statusNode
 var hhParams = {
   minSpareRows: 1,
   contextMenu: ['remove_row'],
-  afterChange: afterChange,
-  // afterRemoveRow: afterRemoveRow,
   beforeRemoveRow: beforeRemoveRow,
   beforeChange: beforeChange
 }
@@ -26,15 +24,97 @@ var data
  * Query
  */
 
-function beforeRemoveRow(a, b) {
-  console.log(a, b, c)
-  console.log(data[a])
-  return false
+function beforeRemoveRow (rowNum, numRows) {
+  var end = rowNum + numRows
+  var idArr = data.slice(rowNum, end).map(function(a) {
+    return a._id
+  })
+
+  blockExit()
+
+  T.iter(idArr, function (a, cb) {
+    params.id = a
+
+    $.post('/mongo/removebyid', params, function (r) {
+      if (r && r.ok && (r.ok == 1)) {
+        statusNode.innerHTML = params.id + ' deleted'
+        cb()
+      } else {
+        releaseExit()
+        swal({html: JSON.stringify(r), type: 'error'}).done()
+        statusNode.innerHTML = JSON.stringify(r)
+      }
+    })
+  }, {
+    concurrency: 20,
+    cb: function () {
+      releaseExit()
+      updateStatusDelayed('Everything deleted', 300)
+      updateStatusDelayed('Autosaving changes', 3300)
+    }
+  })
 }
 
-function beforeChange(a, b) {
-  console.log(a, b)
+function beforeChange (changes, src) {
+  changes = changes.filter(function (a) {
+    if (a[1] !== '_id') return a
+  })
+  if (!changes.length) return
+
+  var changesObj = groupChanges(changes, src)
+
+  var rows = Object.keys(changesObj)
+  if (!rows.length) return
+
+  blockExit()
+
+  T.iter(rows, function (a, cb) {
+    var row = changesObj[a]
+    var doc = data[a]
+
+    if (doc && doc._id) {
+      params.id = doc._id
+      params.update = JSON.stringify(row)
+
+      $.post('/mongo/updatebyid', params, function (r) {
+        if (r && r.ok && (r.ok == 1)) {
+          statusNode.innerHTML = params.id + ' updated'
+          cb()
+        } else {
+          releaseExit()
+          swal({html: JSON.stringify(r), type: 'error'}).done()
+          statusNode.innerHTML = JSON.stringify(r)
+        }
+      })
+    } else {
+      params.data = JSON.stringify([row])
+
+      $.post('/mongo/insert', params, function (r) {
+        if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+          var newId = r.insertedIds[0]
+          hhParams.instance.setDataAtRowProp(a, '_id', newId)
+          statusNode.innerHTML = newId + ' added'
+          cb()
+        } else {
+          releaseExit()
+          swal({html: JSON.stringify(r), type: 'error'}).done()
+          statusNode.innerHTML = JSON.stringify(r)
+        }
+      })
+    }
+  }, {
+    concurrency: 20,
+    cb: function () {
+      releaseExit()
+      updateStatusDelayed('Everything saved', 300)
+      updateStatusDelayed('Autosaving changes', 3300)
+    }
+  })
 }
+
+/**
+ * query
+ */
 
 var isVisualQueryLoaded = false
 
@@ -148,7 +228,9 @@ function getDataMongo (params) {
   $.post('/mongo/find', params, function (arr) {
     spinner.stop()
 
-    printTable(arr, params)
+    data = HH.stringifyArrObj(arr)
+
+    HH.draw(data, hhParams)
 
     Controls.resetQuery(controlNode, params)
 
@@ -172,117 +254,6 @@ function getDataMongo (params) {
   })
 }
 
-function printTable (arr, params) {
-
-  data = HH.stringifyArrObj(arr)
-
-  HH.draw(data, hhParams)
-}
-
-function afterChange (changes, src) {
-    if (src == 'loadData') return
-    if (!changes || !changes.length) return
-
-    var data = hhParams.instance.getData()
-    colHeaders = hhParams.instance.getColHeader()
-    idArr = HH.updateIdArr(data, colHeaders)
-
-    var chObj = HH.workChanges(changes, arr, columns)
-
-    spinner.spin(document.body)
-
-    if (!window.onbeforeunload) window.onbeforeunload = function () {
-        return 'Saving changes in process. If you exit now you would lose your changes.'
-    }
-
-    if (chObj.newArr.length) {
-      var n = 0
-      var nl = chObj.newArr.length
-
-      ;(function next () {
-        var newRowNum = Number(chObj.newArr[n])
-        var newObj = chObj.new[newRowNum]
-        params.data = JSON.stringify([newObj])
-
-        $.post('/mongo/insert', params, function (r) {
-          if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-            var newId = r.insertedIds[0]
-            hot.setDataAtRowProp(newRowNum, '_id', newId)
-            statusNode.innerHTML = newId + ' added'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          n++
-          if (n < nl) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Everything saved', 300)
-            updateStatusDelayed('Autosaving changes', 3300)
-          }
-        })
-      })()
-    } else {
-      window.onbeforeunload = null
-      spinner.stop()
-    }
-
-    if (chObj.updArr.length) {
-      var u = 0
-      var ul = chObj.updArr.length
-
-      ;(function next () {
-        var rowNum = chObj.updArr[u]
-        var update = chObj.upd[rowNum]
-
-        params.id = idArr[rowNum]
-        params.update = JSON.stringify(update)
-
-        $.post('/mongo/updatebyid', params, function (r) {
-          if (r && r.ok && (r.ok == 1)) {
-            statusNode.innerHTML = params.id + ' updated'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          u++
-          if (u < ul) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Everything saved', 300)
-            updateStatusDelayed('Autosaving changes', 3300)
-          }
-        })
-      })()
-    } else {
-      window.onbeforeunload = null
-      spinner.stop()
-    }
-  }
-
-  function afterRemoveRow (rowNum, numRows) {
-    var i = rowNum
-    var l = numRows + rowNum
-
-    spinner.spin(document.body)
-
-    if (!window.onbeforeunload) window.onbeforeunload = function () {
-        return 'Saving changes in process. If you exit now you would lose your changes.'
-      }(function next () {
-        params.id = idArr[rowNum]
-
-        $.post('/mongo/removebyid', params, function (r) {
-          if (r && r.ok && (r.ok == 1)) {
-            statusNode.innerHTML = params.id + ' deleted'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          rowNum++
-          numRows--
-
-          if (numRows > 0) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Autosaving changes')
-          }
-        })
-      })()
-  }
 
 /**
  * Query Functions
@@ -590,4 +561,37 @@ function updateStatusDelayed (text, delay) {
   setTimeout(function () {
     statusNode.innerHTML = text
   }, delay)
+}
+
+function groupChanges (changes, src) {
+  var rowGroups = {}
+
+  if (['external', 'loadData'].indexOf(src) != -1) return rowGroups
+  if (!changes || !changes.length) return rowGroups
+
+  for (var i = 0; i < changes.length; i++) {
+    var change = changes[i]
+    if (!change) continue
+
+    if (change[3] === change[2]) continue
+
+    if (!rowGroups[Number(change[0])]) {
+      rowGroups[Number(change[0])] = {}
+    }
+
+    rowGroups[Number(change[0])][change[1]] = change[3]
+  }
+  return rowGroups
+}
+
+function blockExit () {
+  spinner.spin(document.body)
+  if (!window.onbeforeunload) window.onbeforeunload = function () {
+      return 'Saving changes in process. If you exit now you would lose your changes.'
+  }
+}
+
+function releaseExit () {
+  spinner.stop()
+  window.onbeforeunload = null
 }

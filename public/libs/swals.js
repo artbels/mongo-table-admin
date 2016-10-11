@@ -710,7 +710,7 @@
           id: 'index-type-' + i,
           firstRowText: '...',
           parent: document.querySelector('table#create-indexes-table > tbody > tr:nth-child(' + (i + 1) + ') > td:nth-child(3)')
-        })
+        }, function () {})
 
         // UI.checkbox({
         //   id: 'unique-' + i,
@@ -787,7 +787,7 @@
         concurrency: 1,
         cb: function () {
           $('#create-indexes').modal('hide')
-          swal({title: 'Indexes created', type: 'success'}).done()
+          swal({title: 'Index(es) created', type: 'success'}).done()
         }
       })
     }
