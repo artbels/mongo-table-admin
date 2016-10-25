@@ -27,7 +27,7 @@ countDataMongo(params)
 function countDataMongo (params) {
   T.post('/mongo/count/', params).then(function (num) {
 
-    if(!num) {
+    if(!num && (JSON.stringify(Query.getLimit()) === '{}')) {
       var o = Router.getDb()
       location.pathname = '/' + o.title + '/' + o.urlDbName + '/'
     }

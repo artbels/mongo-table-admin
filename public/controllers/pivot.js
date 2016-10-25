@@ -15,6 +15,12 @@ countDataMongo(params)
 
 function countDataMongo (params) {
   T.post('/mongo/count/', params).then(function (num) {
+
+    if(!num && (JSON.stringify(Query.getLimit()) === '{}')) {
+      var o = Router.getDb()
+      location.pathname = '/' + o.title + '/' + o.urlDbName + '/'
+    }
+    
     if (num < 1000) {
       spinner.spin(document.body)
       getDataMongo(params)
