@@ -1,215 +1,178 @@
-var params = Controls.getCollectionFromUrl(); // todo: create clone of params on requests?
+var HotConfig = {
+  minSpareRows: 1,
+  contextMenu: ['remove_row'],
+  manualColumnMove: true,
+  manualColumnResize: true,
+  beforeRemoveRow: beforeRemoveRow,
+  beforeChange: beforeChange,
+  rowHeaders: true,
+  autoColSize: true,
+}
 
-localStorage['query' + params.db + params.collection] = localStorage['query' + params.db + params.collection] || '{}'
-localStorage['projection' + params.db + params.collection] = localStorage['projection' + params.db + params.collection] || '{}'
-
-params.query = localStorage['query' + params.db + params.collection]
-params.projection = localStorage['projection' + params.db + params.collection]
-
-UI.appendModal({
-  title: 'Create indexes',
-  id: 'create-indexes'
+document.addEventListener("DOMContentLoaded", function () {
+  Query.load()
 })
 
-UI.appendModal({
-  title: 'Run function on each',
-  id: 'update-each'
-})
+var params = Query.getParams()
+if(Query.getLimit()) params.limit = Query.getLimit()
+if(Query.getProjection()) params.projection = JSON.stringify(Query.getProjection())
+if(Query.getQuery()) params.query = JSON.stringify(Query.getQuery())
 
-UI.appendModal({
-  title: 'Query',
-  id: 'query-modal'
-})
-
-var controlNode = document.querySelector('#control')
-
-var statusNode
-var hot, columns, colHeaders, idArr, minSpareRows = 1; // todo: group in one object?
+/** 
+ * Functions
+ */
 
 countDataMongo(params)
 
 function countDataMongo (params) {
-  $.post('/mongo/count', params, function (num) {
-    if (num < 1000) getDataMongo(params)
-    else {
-      Swals.tooMuchRows(controlNode, params, num)
+  T.post('/mongo/count/', params).then(function (num) {
+
+    if(!num) {
+      var o = Router.getDb()
+      location.pathname = '/' + o.title + '/' + o.urlDbName + '/'
+    }
+
+    if (num < 1000) {
+      spinner.spin(document.body)
+      getDataMongo(params)
+    } else {
+      Blocks.tooMuchRows(num, function (limit) {        
+        if(limit) params.limit = limit
+        Query.setLimit(limit)
+        getDataMongo(params)
+      })
     }
   })
 }
 
 function getDataMongo (params) {
-  $.post('/mongo/find', params, function (arr) {
-    if ((typeof spinner != 'undefined') && spinner) spinner.stop()
+  spinner.spin(document.body)
 
-    printTable(arr, params)
+  T.post('/mongo/find/', params).then(function (arr) {
+    spinner.stop()
 
-    Controls.buildQuery(controlNode, params)
+    var data = HH.stringifyArrObj(arr)
 
-    Controls.resetQuery(controlNode, params)
+    HH.draw(data, HotConfig)
 
-    Controls.manageIndexes(controlNode, params)
-
-    Controls.otherActions(controlNode, params, columns, hot, params.collection)
-
-    UI.span({
-      innerHTML: (arr.length - 1) + ' rows found',
-      id: 'status-span',
-      parent: controlNode,
-      style: {
-        color: '#808080',
-        fontSize: '90%'
-      }
-    })
-
-    statusNode = document.querySelector('#status-span')
-
+    if(Query.getLimit()) {
+      updateStatusDelayed((arr.length - 1) + ' loaded due to limit', 0)
+    } else updateStatusDelayed((arr.length - 1) + ' rows found', 0)
     updateStatusDelayed('Autosaving changes', 5000)
   })
 }
 
-function printTable (arr, params) {
-  var container = document.getElementById('output')
+function beforeRemoveRow (rowNum, numRows) {
+  var end = rowNum + numRows
 
-  var ex = document.querySelector('.ht_master.handsontable')
-  if (ex) {
-    container.removeChild(ex)
-  }
+  var currData = HotConfig.instance.getData()
+  var idCol = HotConfig.instance.getColHeader().indexOf('_id')
 
-  var props = HH.buildSchema(arr)
-
-  columns = props.columns
-  colHeaders = props.colHeaders
-  idArr = props.idArr
-
-  arr = HH.stringifyArrObj(arr)
-
-  hot = new Handsontable(container, {
-    data: arr,
-    columns: columns,
-    colHeaders: colHeaders,
-    rowHeaders: false,
-    minSpareRows: minSpareRows,
-    manualColumnResize: true,
-    manualColumnMove: true,
-    autoColSize: true,
-    contextMenu: ['remove_row'],
-    comments: false,
-    // columnSorting: true,
-    afterChange: afterChange,
-    afterRemoveRow: afterRemoveRow
+  var idArr = currData.slice(rowNum, end).map(function(a) {
+    return a[idCol]
   })
 
-  function afterChange (changes, src) {
-    if (src == 'loadData') return
-    if (!changes || !changes.length) return
+  blockExit()
 
-    var data = hot.getData()
-    colHeaders = hot.getColHeader()
-    idArr = HH.updateIdArr(data, colHeaders)
+  T.iter(idArr, function (a, cb) {
+    params.id = a
 
-    var chObj = HH.workChanges(changes, arr, columns)
-
-    spinner.spin(document.body)
-
-    if (!window.onbeforeunload) window.onbeforeunload = function () {
-        return 'Saving changes in process. If you exit now you would lose your changes.'
+    T.post('/mongo/removebyid/', params).then(function (r) {
+      if (r && r.ok && (r.ok == 1)) {
+        updateStatusDelayed(params.id + ' deleted', 0)
+        cb()
+      } else {
+        releaseExit()
+        swal({html: JSON.stringify(r), type: 'error'}).done()
+      }
+    })
+  }, {
+    concurrency: 20,
+    cb: function () {
+      releaseExit()
+      updateStatusDelayed('Everything deleted', 300)
+      updateStatusDelayed('Autosaving changes', 3300)
     }
+  })
+}
 
-    if (chObj.newArr.length) {
-      var n = 0
-      var nl = chObj.newArr.length
+function beforeChange (changes, src) {
+  changes = changes.filter(function (a) {
+    if (a[1] !== '_id') return a
+  })
+  if (!changes.length) return
 
-      ;(function next () {
-        var newRowNum = Number(chObj.newArr[n])
-        var newObj = chObj.new[newRowNum]
-        params.data = JSON.stringify([newObj])
+  var changesObj = HH.groupChanges(changes, src, HotConfig.columns)
+  if (!changesObj) return
 
-        $.post('/mongo/insert', params, function (r) {
-          if (r && r.result && r.result.ok && (r.result.ok == 1)) {
-            var newId = r.insertedIds[0]
-            hot.setDataAtRowProp(newRowNum, '_id', newId)
-            statusNode.innerHTML = newId + ' added'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          n++
-          if (n < nl) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Everything saved', 300)
-            updateStatusDelayed('Autosaving changes', 3300)
-          }
-        })
-      })()
+  var rows = Object.keys(changesObj)
+  if (!rows.length) return
+
+  blockExit()
+
+  T.iter(rows, function (a, cb) {
+    var row = changesObj[a]
+
+    var idCol = HotConfig.instance.getColHeader().indexOf('_id')
+    var doc = HotConfig.instance.getDataAtRow(a)
+
+    if (doc && doc[idCol]) {
+      params.id = doc[idCol]
+      params.update = JSON.stringify(row)
+
+      T.post('/mongo/updatebyid/', params).then(function (r) {
+        if (r && r.ok && (r.nModified === 1)) {
+          updateStatusDelayed(params.id + ' updated', 0)
+          cb()
+        } else {
+          releaseExit()
+          swal({html: JSON.stringify(r), type: 'error'}).done()
+        }
+      })
     } else {
-      window.onbeforeunload = null
-      spinner.stop()
+      params.data = JSON.stringify([row])
+
+      T.post('/mongo/insert/', params).then(function (r) {
+        if (r && r.result && r.result.ok && (r.result.ok == 1)) {
+          var newId = r.insertedIds[0]
+          HotConfig.instance.setDataAtRowProp(a, '_id', newId)
+          updateStatusDelayed(newId + ' added', 0)
+          cb()
+        } else {
+          releaseExit()
+          swal({html: JSON.stringify(r), type: 'error'}).done()
+        }
+      })
     }
-
-    if (chObj.updArr.length) {
-      var u = 0
-      var ul = chObj.updArr.length
-
-      ;(function next () {
-        var rowNum = chObj.updArr[u]
-        var update = chObj.upd[rowNum]
-
-        params.id = idArr[rowNum]
-        params.update = JSON.stringify(update)
-
-        $.post('/mongo/updatebyid', params, function (r) {
-          if (r && r.ok && (r.ok == 1)) {
-            statusNode.innerHTML = params.id + ' updated'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          u++
-          if (u < ul) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Everything saved', 300)
-            updateStatusDelayed('Autosaving changes', 3300)
-          }
-        })
-      })()
-    } else {
-      window.onbeforeunload = null
-      spinner.stop()
+  }, {
+    concurrency: 20,
+    cb: function () {
+      releaseExit()
+      updateStatusDelayed('Everything saved', 300)
+      updateStatusDelayed('Autosaving changes', 3300)
     }
-  }
-
-  function afterRemoveRow (rowNum, numRows) {
-    var i = rowNum
-    var l = numRows + rowNum
-
-    spinner.spin(document.body)
-
-    if (!window.onbeforeunload) window.onbeforeunload = function () {
-        return 'Saving changes in process. If you exit now you would lose your changes.'
-      }(function next () {
-        params.id = idArr[rowNum]
-
-        $.post('/mongo/removebyid', params, function (r) {
-          if (r && r.ok && (r.ok == 1)) {
-            statusNode.innerHTML = params.id + ' deleted'
-          } else statusNode.innerHTML = JSON.stringify(r)
-          rowNum++
-          numRows--
-
-          if (numRows > 0) next()
-          else {
-            spinner.stop()
-            window.onbeforeunload = null
-            updateStatusDelayed('Autosaving changes')
-          }
-        })
-      })()
-  }
+  })
 }
 
 function updateStatusDelayed (text, delay) {
+  var statusNode = document.querySelector('#status-span')
+
   if (!text) return
-  delay = delay || 3000
+  if(delay === undefined) delay = 3000
 
   setTimeout(function () {
     statusNode.innerHTML = text
   }, delay)
+}
+
+function blockExit () {
+  spinner.spin(document.body)
+  if (!window.onbeforeunload) window.onbeforeunload = function () {
+      return 'Saving changes in process. If you exit now you would lose your changes.'
+  }
+}
+
+function releaseExit () {
+  spinner.stop()
+  window.onbeforeunload = null
 }

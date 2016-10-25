@@ -1,28 +1,40 @@
-var params = Controls.getCollectionFromUrl()
-var controlNode = document.querySelector('#control')
+document.addEventListener("DOMContentLoaded", function () {
+  Query.load()
+  var addFieldNote = document.querySelector("#addField")
+  addFieldNote.parentNode.removeChild(addFieldNote)
+})
+
+var params = Query.getParams()
+if(Query.getLimit()) params.limit = Query.getLimit()
+if(Query.getProjection()) params.projection = JSON.stringify(Query.getProjection())
+if(Query.getQuery()) params.query = JSON.stringify(Query.getQuery())
+
+var data
 
 countDataMongo(params)
 
 function countDataMongo (params) {
-  $.post('/mongo/count', params, function (num) {
-    if (num < 1000) getDataMongo(params)
-    else {
-      Swals.tooMuchRows(controlNode, params, num)
+  T.post('/mongo/count/', params).then(function (num) {
+    if (num < 1000) {
+      spinner.spin(document.body)
+      getDataMongo(params)
+    } else {
+      Blocks.tooMuchRows(num, function (limit) {
+        if(limit) params.limit = limit
+        getDataMongo(params)
+      })
     }
   })
 }
 
 function getDataMongo (params) {
-  $.post('/mongo/find', params, function (arr) {
-    if ((typeof spinner != 'undefined') && spinner) spinner.stop()
+  spinner.spin(document.body)
 
-    Controls.buildQuery(controlNode, params)
-
-    Controls.resetQuery(controlNode, params)
-
-    Controls.dropCollection(controlNode)
+  T.post('/mongo/find/', params).then(function (arr) {
+    data = arr
 
     printPivot(arr)
+    spinner.stop()
   })
 }
 

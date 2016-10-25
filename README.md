@@ -4,7 +4,7 @@ Admin interface for mongo. Work with documents as table rows. Integrates [Handso
 
 ### why
 
-For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clusters etc. Thats what pivot is about. And second thing, I used to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table or Google spreadsheet.
+For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clusters etc. Thats what pivot is about. And second thing, I like to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table.
 
 If you are looking for a full featured mongo admin, please check:
 * [admin-mongo](https://www.npmjs.com/package/admin-mongo)
@@ -18,10 +18,13 @@ Don't have local mongodb or one with secure url access? Get 500MB free on [mLabs
 
 ### features
 
-* Browse, analyze documents using Pivottable - group by rows, columns. Build graphs, export small datasets.
-* Inline edit using Handsontable. Add new rows. Delete rows. Add or modify columns. Filter collection by regular query. 
-* Create new collection copy-pasting data from any source. Set data type - Numeral, Boolean, Array, Object, Date. String is by default.
-* Upload data from xls, xlsx, csv, json, and those zipped.
+* Inline edit using Handsontable. Add new rows. Delete rows. Add or modify columns.  
+* Browse, analyze documents using Pivottable - group by rows, columns. Build graphs, export small datasets.  
+* Query documents using JSON or new Visual Query Editor. Count before loading data. Manage projection and limit.  
+* Use goodies like run sync function on every document, find dupes or group count.
+* Create new collection copy-pasting data from any source. Set data type - Number, Boolean, Array, Object, Date. String is by default.  
+* Import data from xls, xlsx, csv, json, and those zipped.  
+* Manage indexes, browse or edit collection schema.  
 
 ### installation
 git clone https://github.com/artbels/mongo-table-admin.git && cd mongo-table-admin  
@@ -53,18 +56,23 @@ alt="add rows" width="480" height="270" border="10" /></a>
 alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
-- [x] manage indexes
-- [x] run sync function for every document
-- [x] export/import json
-- [ ] multiple times faster saving and deleting using concurrent requests and grouping
-- [ ] use JQuery QueryBuilder to build queries visually
-- [ ] switch to Handsontable BeforeRemoveRow and BeforeChange events
-- [ ] use ace editor
-- [ ] set limit for query
+- [*] multiple times faster saving and deleting using concurrent requests and grouping
+- [*] use JQuery QueryBuilder to build queries visually
+- [*] switch to Handsontable BeforeRemoveRow and BeforeChange events
+- [*] use ace editor for json edit
+- [*] set projection and limit for query
+- [ ] add/delete/rename multiple fields at once
+- [ ] manage projection as a table, not a JSON  
+- [ ] refactor schema management  
+- [ ] select whether to run function for the whole collection or based on query  
+- [ ] refactor "create" view  
+
+### limitations  
+* connection string should match "mongodb://<user>:<password>@<host>:<port>/<db>"
+* documents must have an "_id" property which should be a string, integer or MongoDB ObjectId
 
 ### contribution & help
 
-* be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. configure auth.
-* pull requests are welcome - the code is not great yet, handsontable helper functions need refactoring.
-* found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues).
+* be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. add custom auth.
+* found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues) or request pull.
 * **don't be shy to star my first open source experiment - I promise to smile every time I see it ))**

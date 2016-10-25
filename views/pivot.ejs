@@ -1,0 +1,38 @@
+<% include ./partials/head.ejs %>
+
+<title>Pivot Table | Mongo Table Admin</title>
+</head>
+
+<body>
+
+  <% include ./partials/navbar.ejs %>
+
+  <% include ./partials/menu.ejs %>
+
+  <div id="table-container"><div id="output"></div></div>
+
+  <% include ./partials/bodyend.ejs %>
+
+  <script src="/vendor/pivottable/jquery-ui/jquery-ui.min.js"></script> 
+  <script src="/vendor/pivottable/jquery-ui/jquery.ui.touch-punch.min.js"></script> 
+  <script src="/vendor/pivottable/jquery-ui/jquery.csv-0.71.min.js"></script> 
+  <script src="/vendor/pivottable/jquery-ui/chosen.jquery.js"></script> 
+  
+  <script src="/vendor/pivottable/d3.min.js"></script> 
+  <script src="/vendor/pivottable/c3.min.js"></script> 
+  
+  <script src="/node_modules/pivottable/dist/pivot.min.js"></script>
+  <script src="/node_modules/pivottable/dist/export_renderers.min.js"></script>
+  <script src="/node_modules/pivottable/dist/d3_renderers.min.js"></script>
+  <script src="/node_modules/pivottable/dist/c3_renderers.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="/vendor/pivottable/jquery-ui/chosen.min.css"> 
+
+  <link rel="stylesheet" type="text/css" href="/vendor/pivottable/c3.min.css"> 
+  
+  <link rel="stylesheet" type="text/css" href="/node_modules/pivottable/dist/pivot.min.css">
+  
+  <script src="/controllers/pivot.js"></script>
+
+</body>
+</html>

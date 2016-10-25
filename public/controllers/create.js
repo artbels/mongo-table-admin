@@ -32,6 +32,7 @@ var hot,
 
 for (var i = 0; i < startCols; i++) {
   columns.push({
+    data: i + 1,
     type: 'text',
     jsType: 'string'
   })
@@ -75,9 +76,8 @@ UI.button({
   innerHTML: 'Save data'
 }, function () {
   var hotData = hot.getData()
-  var colHeaders = hot.getColHeader()
-  var arr = HH.convArrArrToArrObj(hotData, minSpareRows, colHeaders, columns)
-  Swals.saveDataMongo(arr)
+  var arr = HH.convArrArrToArrObj(hotData, columns, minSpareRows)
+  Blocks.saveDataMongo(arr)
 })
 
 /**
@@ -97,6 +97,7 @@ function setHeadersFirstRow () {
     var name = firstRow[i]
     if (name) {
       colHeaders.push(name)
+      columns[i].data = name
       newColumns.push(columns[i])
     } else deleteCols.push(i)
   }
@@ -111,8 +112,6 @@ function setHeadersFirstRow () {
   hot.updateSettings({
     'colWidths': undefined
   })
-
-  console.log(newColumns, colHeaders)
 
   hot.updateSettings({
     'columns': newColumns,
@@ -223,7 +222,7 @@ function buildButton () {
 }
 
 function setColumnType (i, type, instance) {
-  var colHeaders = hot.getColHeader()
+  // var colHeaders = hot.getColHeader()
 
   columns[i].type = HH.typesMap[type]
   columns[i].jsType = type
@@ -239,7 +238,7 @@ function setColumnType (i, type, instance) {
     if ((cell === null) || (cell === '')) continue
     switch (type) {
       case 'number':
-        var formattedNumeral = numeral().unformat(cell)
+        var formattedNumeral = Number(cell)
         hot.setDataAtCell(j, i, formattedNumeral)
         break
 
@@ -264,23 +263,6 @@ function setColumnType (i, type, instance) {
   })
   instance.validateCells(function () {
     instance.render()
-  })
-}
-
-function bindDumpButton () {
-  if (typeof Handsontable === 'undefined') {
-    return
-  }
-
-  Handsontable.Dom.addEvent(document.body, 'click', function (e) {
-    var element = e.target || e.srcElement
-
-    if (element.nodeName == 'BUTTON' && element.name == 'dump') {
-      var name = element.getAttribute('data-dump')
-      var instance = element.getAttribute('data-instance')
-      var hot = window[instance]
-    // console.log('data of ' + name, hot.getData())
-    }
   })
 }
 
@@ -341,9 +323,7 @@ function workJson (json) {
     json = [json]
   }
 
-  var currData = hot.getData()
-
-  var schema = HH.buildSchema(json)
+  var schema = buildSchema(json)
   json = HH.stringifyArrObj(json)
   var arrArr = HH.convArrObjArrArr(json)
 
@@ -357,6 +337,36 @@ function workJson (json) {
     'colHeaders': colNumHeaders,
     'data': arrArr
   })
+}
+
+function buildSchema (arr) {
+  var props = {}
+
+  var o = {
+    columns: [],
+    colHeaders: [],
+    idArr: []
+  }
+
+  for (var i = 0; i < arr.length; i++) {
+    var row = arr[i]
+    o.idArr.push(row._id)
+    for (var key in row) {
+      var val = row[key]
+      var jsType = typeof val
+      if (jsType == 'string') {
+        if (HH.reJsStrData.test(val)) jsType = 'date'
+      }
+      if (!props[key]) props[key] = jsType
+    }
+  }
+
+  for (var prop in props) {
+    var col = HH.setColType(prop, props[prop])
+    o.columns.push(col)
+    o.colHeaders.push(prop)
+  }
+  return o
 }
 
 function convZipStr (buff) {

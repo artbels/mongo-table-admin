@@ -1,0 +1,65 @@
+<div class="container">
+  <div class="btn-group" style="margin-right: 10px;">
+    <button id="setQuery" onclick="Menu(this)" type="button" class="btn btn-default btn-sm" style="font-weight:300">Query</button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a id="setJsonQuery" onclick="Menu(this)" href="#">JSON query</a></li>
+      <li><a id="setVisualQuery" onclick="Menu(this)" href="#">Visual query</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a id="resetQuery" onclick="Menu(this)" href="#">Reset query</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a id="setLimit" onclick="Menu(this)" href="#">Limit</a></li>
+      <li><a id="setProjection" onclick="Menu(this)" href="#">Projection</a></li>
+    </ul>
+  </div>
+
+  <div class="btn-group" style="margin-right: 10px;">
+    <button id="getSchema" onclick="Menu(this)" type="button" class="btn btn-default btn-sm" style="font-weight:300">Schema</button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a id="refreshSchema" onclick="Menu(this)"href="#">Refresh schema</a></li>
+      <li><a id="browseSchema" onclick="Menu(this)" href="#">Browse schema</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a id="addField" onclick="Menu(this)" href="#">Add field</a></li>
+      <li><a id="renameField" onclick="Menu(this)" href="#">Rename field</a></li>
+      <li><a id="deleteField" onclick="Menu(this)" href="#">Delete field</a></li>
+    </ul>
+  </div>
+
+  <div class="btn-group" style="margin-right: 10px;">
+    <button type="button" id="getIndex" onclick="Menu(this)"  class="btn btn-default btn-sm" style="font-weight:300">Index</button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a id="createIndex" onclick="Menu(this)" href="#">Create</a></li>
+      <li><a id="browseIndex" onclick="Menu(this)" href="#">Browse</a></li>
+      <li><a id="deleteIndex" onclick="Menu(this)" href="#">Delete</a></li>
+    </ul>
+  </div>
+
+  <div class="btn-group" style="margin-right: 10px;">
+    <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">Other
+      <span class="caret"></span></button>
+      <ul class="dropdown-menu">
+        <li><a id="runFunction" onclick="Menu(this)" href="#">Run function on each document</a></li>
+        <li><a id="getDistinct" onclick="Menu(this)" href="#">Get distinct values</a></li>
+        <li><a id="findDupes" onclick="Menu(this)" href="#">Find dupes</a></li>
+        <li><a id="groupCount" onclick="Menu(this)" href="#">Group and count</a></li>
+        <li role="separator" class="divider"></li>
+        <li><a id="dropCollection" onclick="Menu(this)" href="#">Drop collection</a></li>
+        <li><a id="importJson" onclick="Menu(this)" href="#">Import JSON</a></li>
+        <li><a id="exportJson" onclick="Menu(this)" href="#">Export JSON</a></li>
+      </ul>
+    </div>
+
+    <span id="status-span" style="color: #808080; font-size: 90%"></span>
+
+  </div>

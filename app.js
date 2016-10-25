@@ -13,7 +13,7 @@ app.set('view engine', 'ejs')
 app.use(logger('dev'))
 
 app.use(bodyParser.json({limit: '5mb'}))
-app.use(bodyParser.urlencoded({ extended: false , limit: '5mb'}))
+app.use(bodyParser.urlencoded({ extended: false,  limit: '5mb'}))
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')))
@@ -28,26 +28,41 @@ if (process.env.MTA_IPS) {
   })
 }
 
+app.use(function (req, res, next) {
+  if (req.url.substr(-1) !== '/')
+    res.redirect(301, req.url + '/')
+  else
+    next()
+})
+
 app.use('/mongo', mongoRoutes)
 
 app.get('/', function (req, res) {
-  res.render('pages/index')
+  res.render('index')
 })
 
-app.get('/create', function (req, res) {
-  res.render('pages/create')
+app.get('/:conn/', function (req, res) {
+  res.render('index')
 })
 
-app.get('/:db/:collection/table', function (req, res) {
-  res.render('pages/table')
+app.get('/:conn/:db/', function (req, res) {
+  res.render('index')
 })
 
-app.get('/:db/:collection/pivot', function (req, res) {
-  res.render('pages/pivot')
+app.get('/:conn/:db/create/', function (req, res) {
+  res.render('create')
 })
 
-app.get('/:db/:collection/query', function (req, res) {
-  res.render('pages/query')
+app.get('/:conn/:db/:collection/', function (req, res) {
+  res.redirect(req.path + '/table')
+})
+
+app.get('/:conn/:db/:collection/table/', function (req, res) {
+  res.render('table')
+})
+
+app.get('/:conn/:db/:collection/pivot/', function (req, res) {
+  res.render('pivot')
 })
 
 // catch 404 and forward to error handler

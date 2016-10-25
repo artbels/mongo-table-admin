@@ -11,15 +11,15 @@
 
     <div class="collapse navbar-collapse navbar-left" id="navbar-left">
       <ul class="nav navbar-nav">
-        <li><a href='/create'>Create Collection</a></li>
+        <li><a id="create-link" href='/create'>Create Collection</a></li>
       </ul>
     </div>
 
     <div class="collapse navbar-collapse navbar-right" id="navbar-right">
       <ul class="nav navbar-nav">
         <li id="switch-li"></li>
-        <li><button id="collections" style="margin:8px;" class="btn btn-default">Collections</button></li>
-        <li><button id="connection" style="margin:8px;" class="btn btn-default">Databases</button></li>        
+        <li><button id="chooseCollection" onclick="Menu(this)" style="margin:8px;" class="btn btn-default">Collections</button></li>
+        <li><button id="chooseDatabase" onclick="Menu(this)" style="margin:8px;" class="btn btn-default">Databases</button></li>        
       </ul>
 
     </div>
@@ -27,51 +27,34 @@
 </div>
 
 <script>
-  var connNode = document.querySelector("#connection");
-  connNode.onclick = function () {
-    var dbPath = localStorage["input#db-path"];
-    if(!dbPath) return Swals.dbPath();
+  var switchLiNode = document.querySelector('#switch-li')
+  var o = Router.getDb()
 
-    Controls.dbs();
-  };
+  document.querySelector("#create-link").href = '/' + o.title + '/' + o.urlDbName  + '/create/'
 
-  var listNode = document.querySelector("#collections");
-  listNode.onclick = function() {
-
-    var dbPath = localStorage["input#db-path"];
-    if(!dbPath) return Swals.dbPath();
-
-    Controls.collections();              
-  };
-
-  var switchLiNode = document.querySelector("#switch-li");
-  var currView = window.location.href.split(/\//g).pop();
-
-  if(["pivot", "table"].indexOf(currView) != -1) {
-    if(currView == "pivot") {
+  if (['pivot', 'table'].indexOf(o.view) != -1) {
+    if (o.view == 'pivot') {
       UI.button({
-        innerHTML: "Switch to table",
-        id: "switch-to-table",
+        innerHTML: 'Switch to table',
+        id: 'switch-to-table',
         style: {
-          margin: "8px"
+          margin: '8px'
         },
         parent: switchLiNode
       }, function () {
-        Controls.changeView("table");
-      });
-      
+        Router.changeView('table')
+      })
     } else {
       UI.button({
-        innerHTML: "Switch to pivot",
-        id: "switch-to-pivot",
+        innerHTML: 'Switch to pivot',
+        id: 'switch-to-pivot',
         parent: switchLiNode,
         style: {
-          margin: "8px"
+          margin: '8px'
         }
       }, function () {
-        Controls.changeView("pivot");
-      });
+        Router.changeView('pivot')
+      })
     }
   }
-
 </script>
