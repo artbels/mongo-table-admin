@@ -229,10 +229,7 @@
 
   Router.changeView = function (newView) {
     var o = Router.getDb()
-
-    var newPath = window.location.href.replace(o.view, newView)
-
-    window.location.href = newPath
+    location.href = '/' + o.title + '/' + o.urlDbName + '/' + o.collection + '/' + newView + '/'
   }
 
   Router.collections = function (o) {
