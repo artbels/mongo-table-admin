@@ -51,6 +51,7 @@ function getDataMongo (params) {
   T.post('/mongo/find/', params).then(function (arr) {
     spinner.stop()
 
+    HotConfig.columns = HH.getColumns(arr)
     var data = HH.stringifyArrObj(arr)
 
     HH.draw(data, HotConfig)
