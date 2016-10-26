@@ -182,7 +182,7 @@
     return rowGroups
   }
 
-  HH.convArrArrToArrObj = function (hotData, columns, minSpareRows) {
+  HH.convArrArrToArrObj = function (hotData, columns, minSpareRows, colHeaders) {
 
     if(!hotData || !columns) throw Error('!hotData || !columns')
 
@@ -190,7 +190,7 @@
 
     var arr = []
 
-    var colHeaders = columns.map(function (a) {
+    colHeaders = colHeaders || columns.map(function (a) {
       return a.data
     })
 

@@ -32,7 +32,6 @@ var hot,
 
 for (var i = 0; i < startCols; i++) {
   columns.push({
-    data: i + 1,
     type: 'text',
     jsType: 'string'
   })
@@ -76,7 +75,8 @@ UI.button({
   innerHTML: 'Save data'
 }, function () {
   var hotData = hot.getData()
-  var arr = HH.convArrArrToArrObj(hotData, columns, minSpareRows)
+  var colHeaders = hot.getColHeader()
+  var arr = HH.convArrArrToArrObj(hotData, columns, minSpareRows, colHeaders)
   Blocks.saveDataMongo(arr)
 })
 
@@ -85,19 +85,19 @@ UI.button({
  */
 
 function setHeadersFirstRow () {
-  var colHeaders = [],
-    hotData = hot.getData(),
-    firstRow = hotData[0],
-    data = hotData.splice(1),
-    newColumns = [],
-    deleteCols = [],
-    colWidths = []
+  var colHeaders = []
+  var hotData = hot.getData()
+  var firstRow = hotData[0]
+  var data = hotData.splice(1)
+  var newColumns = []
+  var deleteCols = []
+  var colWidths = []
+    console.log(data)
 
   for (var i in firstRow) {
     var name = firstRow[i]
     if (name) {
       colHeaders.push(name)
-      columns[i].data = name
       newColumns.push(columns[i])
     } else deleteCols.push(i)
   }
