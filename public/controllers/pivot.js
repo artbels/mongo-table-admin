@@ -19,9 +19,9 @@ function countDataMongo (params) {
     if(!num && (JSON.stringify(Query.getLimit()) === '{}')) {
       var o = Router.getDb()
       location.pathname = '/' + o.title + '/' + o.urlDbName + '/'
-    }
-    
-    if (num < 1000) {
+    } else if (num === 0 ) {
+      swal({title: "0 documents found", type: "info"}).done()
+    } else if (num < 1000) {
       spinner.spin(document.body)
       getDataMongo(params)
     } else {
