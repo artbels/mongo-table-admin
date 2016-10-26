@@ -105,6 +105,7 @@
           parent: swalNode
 
         }, function () {
+          swal.close()
           Query.show()
         })
 
