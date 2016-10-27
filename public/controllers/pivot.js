@@ -26,7 +26,8 @@ function countDataMongo (params) {
       getDataMongo(params)
     } else {
       Blocks.tooMuchRows(num, function (limit) {
-        if(limit) params.limit = limit
+        params.limit = limit
+        Query.setLimit(limit)
         getDataMongo(params)
       })
     }

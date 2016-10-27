@@ -116,7 +116,7 @@
           parent: swalNode
 
         }, function () {
-          cb()
+          cb(0)
           swal.close()
         })
       }
