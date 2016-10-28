@@ -2,7 +2,7 @@
 var T = require('../t')
 
 T.iter([1, 2, 3, 4, 5], async, {
-  concurrency: 1000,
+  concurrency: 10,
   timeout: 0,
   cb: next
 })

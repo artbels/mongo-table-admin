@@ -10,7 +10,7 @@
     return JSON.parse(JSON.stringify(params))
   }
 
-  function pth() {
+  function pth () {
     var o = Router.getDb()
     return o.title + '/' + o.urlDbName + '/' + o.collection + '/'
   }
@@ -59,7 +59,8 @@
 
   Query.show = function (tab) {
     $('#query-modal').modal('show')
-    document.querySelector("#" + tab).click()
+    var node = document.querySelector('#' + tab)
+    if(node) node.click()
   }
 
   var isVisualQueryLoaded = false
@@ -142,9 +143,101 @@
    * Query Functions
    */
 
+  function buildProjectionTable () {
+    var proj = Query.getProjection()
+    var schema = Query.getSchema()
+
+    var tableArr = schema.filter(function (item, i) {
+      if (schema[i].id !== '_id') return item
+    })
+
+    tableArr = tableArr.map(function (item) {
+      item.field = item.id
+      delete item.id
+      return item
+    })
+
+    var targetNode = document.querySelector('#projection-div')
+    // targetNode.align = 'center'
+
+    var projParams = {
+      parent: targetNode,
+      cols: ['field', 'type', 'show', 'hide'],
+      id: 'projection-table'
+    }
+
+    UI.table(tableArr, projParams)
+
+    tableArr.forEach(function (a, i) {
+      var showNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(3)')
+      var hideNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(4)')
+      UI.checkbox({
+        id: 'show' + i,
+        parent: showNode,
+        checked: (proj[a.field] === 1)
+      }, function(r) {
+        setProjDispatcher(r, tableArr)
+      })
+      UI.checkbox({
+        id: 'hide' + i,
+        parent: hideNode,
+        checked: (proj[a.field] === 0)
+      }, function(r) {
+        setProjDispatcher(r, tableArr)
+      })
+    })
+
+    if(!areAllShowFalse()) toggleDisabled (true)
+  }
+
+function toggleDisabled (bool) {
+      var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
+      var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+
+      for (var i = 0; i < hideNodes.length; i++) {
+        if (!bool && areAllShowFalse (showNodes)) {
+          hideNodes[i].disabled = false
+        } else if (bool) {
+          hideNodes[i].disabled = true
+        }
+      }
+    }
+
+  function areAllShowFalse (showNodes) {
+      showNodes = showNodes || document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+
+      var allFalse = true
+      showNodes.forEach(function (a) {
+        if (a.checked) allFalse = false
+      })
+      return allFalse
+    }
+
+  function setProjDispatcher (r, tableArr) {
+      var bool = JSON.parse(r.split(' ')[1])
+      var type = r.slice(0, 4)
+      var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+      var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
+      var newProjection = {}
+
+      if (type === 'show') {
+        toggleDisabled(bool)
+      }
+
+      for (var i = 0; i < tableArr.length; i++) {
+        var field = tableArr[i].field
+        if (showNodes[i].checked) {
+          newProjection[field] = 1
+        } else if (hideNodes[i].checked && areAllShowFalse (showNodes)) {
+          newProjection[field] = 0
+        }
+      }
+
+      Query.setProjection(newProjection)
+    }
+
   function buildModal () {
     Blocks.ace(jsonParams)
-    Blocks.ace(projParams)
 
     UI.input({
       type: 'number',
@@ -164,7 +257,7 @@
       Query.setLimit(document.querySelector('#limit-input').value)
     }
 
-    UI.button({innerHTML: 'Load matching', parent: '#query-modal-footer', className: 'btn btn-primary'}, function () {
+    UI.button({innerHTML: 'Load data', parent: '#query-modal-footer', className: 'btn btn-primary'}, function () {
       if (!checkValidJson()) return
       checkSaveQB()
       location.reload()
@@ -208,7 +301,7 @@
     })
   }
 
-  Query.updateSchema = function  () {
+  Query.updateSchema = function () {
     spinner.spin(document.body)
     T.post('/mongo/schema/', params).then(function (schema) {
       spinner.stop()
@@ -218,7 +311,7 @@
       var filters = convSchema2Fields(schema)
 
       Query.setSchema(filters)
-      if(isVisualQueryLoaded) {
+      if (isVisualQueryLoaded) {
         $('div#' + queryBuilderDiv).queryBuilder('setFilters', true, filters)
       }
     })
@@ -359,6 +452,9 @@
           })
         }
       })
+    } else if(thisNode.id === 'projection') {
+      buildProjectionTable()
+      switchTabs(thisNode)
     } else {
       switchTabs(thisNode)
     }

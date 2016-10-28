@@ -40,13 +40,13 @@
       var item = arr[index]
       func(item, function (res) {
         setTimeout(function () { // without timeout sync functions won't grow index
-          midCallback(res)
+          midCallback(res, index)
         }, params.timeout)
       }, params)
     }
 
-    function midCallback (res) {
-      if (res) finalArr.push(res)
+    function midCallback (res, index) {
+      if (res) finalArr[index] = res
       received++
 
       if (received == params.len) {
@@ -341,10 +341,6 @@
     }
 
     return finStr
-
-    function isUpper (letter) {
-      return letter === letter.toUpperCase()
-    }
   }
 
   if (typeof module !== 'undefined' && module.exports) {

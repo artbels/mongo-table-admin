@@ -936,7 +936,7 @@
     if (arr.length !== 0) {
       for (var n = 0; n < arr.length; n++) { // собираем данные полей, чистим
         var dRow = tbody.insertRow(-1)
-        dRow.id = n
+        dRow.id = "r"+n
         var oneObj = arr[n]
         if (params.selectable) {
           var tdch = document.createElement('td')
@@ -945,7 +945,7 @@
 
           var chBoxRow = document.createElement('input')
           chBoxRow.className = params.tableId + 'RowCheckbox'
-          chBoxRow.id = n
+          chBoxRow.id = "r"+n
           chBoxRow.type = 'checkbox'
           chBoxRow.checked = Boolean(params.checked)
           tdch.appendChild(chBoxRow)

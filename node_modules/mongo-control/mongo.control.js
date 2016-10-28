@@ -378,7 +378,7 @@ MC.schema = function (params) {
                   .split('(')[0]
                   .toLowerCase()
                 uniqKeys[key] = objConstr
-              }
+              } else uniqKeys[key] = "null"
             } else uniqKeys[key] = typeof doc[key]
           }
         } else {

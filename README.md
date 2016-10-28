@@ -2,6 +2,11 @@
 
 Admin interface for mongo. Work with documents as table rows. Integrates [Handsontable](https://handsontable.com/) - great inline edit tool, and [Pivottable](https://github.com/nicolaskruchten/pivottable) - data discovery and analisys tool.
 
+[![js-standard-style](https://img.shields.io/badge/javascript-standard%20code%20style-green.svg?style=flat-square)](https://github.com/feross/standard)
+[![downloads](https://img.shields.io/npm/dm/mongo-table-admin.svg?style=flat-square)](https://github.com/artbels/mongo-table-admin)
+[![npm](https://img.shields.io/npm/l/mongo-table-admin.svg?style=flat-square)]()
+
+
 ### why
 
 For me, data collection is usually not just a valid json. You can say I'm an old style, but I'd like to understand data structure, trends, clusters etc. Thats what pivot is about. And second thing, I like to fix data easyly when I see small problems. Not like a SQL query, but inlide edit - just like Excel table.
@@ -61,8 +66,8 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [*] switch to Handsontable BeforeRemoveRow and BeforeChange events
 - [*] use ace editor for json edit
 - [*] set projection and limit for query
+- [*] manage projection as a table, not a JSON  
 - [ ] add/delete/rename multiple fields at once
-- [ ] manage projection as a table, not a JSON  
 - [ ] refactor schema management  
 - [ ] select whether to run function for the whole collection or based on query  
 - [ ] refactor "create" view  
