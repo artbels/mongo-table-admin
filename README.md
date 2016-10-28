@@ -3,7 +3,7 @@
 Admin interface for mongo. Work with documents as table rows. Integrates [Handsontable](https://handsontable.com/) - great inline edit tool, and [Pivottable](https://github.com/nicolaskruchten/pivottable) - data discovery and analisys tool.
 
 [![js-standard-style](https://img.shields.io/badge/javascript-standard%20code%20style-green.svg?style=flat-square)](https://github.com/feross/standard)
-[![downloads](https://img.shields.io/npm/dm/mongo-table-admin.svg?style=flat-square)](https://github.com/artbels/mongo-table-admin)
+[![downloads](https://img.shields.io/npm/dt/mongo-table-admin.svg?style=flat-square)](https://github.com/artbels/mongo-table-admin)
 [![npm](https://img.shields.io/npm/l/mongo-table-admin.svg?style=flat-square)]()
 
 

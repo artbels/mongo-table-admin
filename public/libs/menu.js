@@ -226,76 +226,65 @@
   }
 
   func.deleteField = function () {
-    var o = Router.getDb()
     var params = Query.getParams()
 
     var noIdColHeaders = []
 
-    if (o.view === 'table') {
-      noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r != '_id') return r
-      })
-    } else {
-      var props = {}
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
-        for (var key in row) {
-          props[key] = true
-        }
+    Query.getSchema().forEach(function (a) {
+      if (a.id !== '_id') {
+        noIdColHeaders.push({field: a.id})
       }
-      noIdColHeaders = Object.keys(props)
-    }
+    })
+
     swal({
-      title: 'Delete field',
+      title: 'Delete fields',
       showCancelButton: true,
       html: "<div id='swal-div' align='center'></div>",
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.select(noIdColHeaders, {
-          id: 'field-to-delete',
-          parent: swalNode
-        }, function () {})
-      // document.querySelector("#field-to-deleteSelect").value = noIdColHeaders.pop()
-      }
-    }).then(function () {
-      params.field = document.querySelector('#field-to-deleteSelect').value
-
-      if (!params.field) {
-        return swal({
-          type: 'warning',
-          title: 'no field to delete'
+        UI.table(noIdColHeaders, {
+          id: 'fields-to-delete',
+          parent: swalNode,
+          selectable: true
         })
       }
+    }).then(function () {
+      var fields = UI.getTableSel('fields-to-delete')
+
+      var remArr = []
+
+      fields.forEach(function (i) {
+        remArr.push(noIdColHeaders[i].field)
+      })
+
+      if (!remArr.length) {
+        return swal({
+          type: 'warning',
+          title: 'no fields to delete'
+        })
+      }
+
+      params.fields = JSON.stringify(remArr)
 
       T.post('/mongo/unsetfield/', params).then(function (r) {
         if (r && r.ok && (r.ok == 1)) {
           location.reload()
-        } else statusNode.innerHTML = JSON.stringify(r)
+        } else swal({html: JSON.stringify(r), type: 'warning'}).done()
       })
     }).catch(function () {})
   }
 
   func.getDistinct = function () {
-    var o = Router.getDb()
     var params = Query.getParams()
 
     var noIdColHeaders = []
 
-    if (o.view === 'table') {
-      noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r != '_id') return r
-      })
-    } else {
-      var props = {}
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
-        for (var key in row) {
-          props[key] = true
-        }
+    Query.getSchema().forEach(function (a) {
+      if (a.id !== '_id') {
+        noIdColHeaders.push(a.id)
       }
-      noIdColHeaders = Object.keys(props)
-    }
+    })
 
     swal({
       title: 'Get distinct values',
@@ -401,7 +390,6 @@
       })
     }).catch(function () {})
   }
-
 
   func.groupCount = function () {
     var o = Router.getDb()
@@ -765,8 +753,8 @@
   /**
    * Refactor
    */
-  
-  function openVisualQuery() {
+
+  function openVisualQuery () {
     var params = Controls.getCollectionFromUrl()
 
     T.post('/mongo/keys/', params).then(function (fields) {
