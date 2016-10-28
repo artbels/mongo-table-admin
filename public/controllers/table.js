@@ -7,6 +7,7 @@ var HotConfig = {
   beforeChange: beforeChange,
   rowHeaders: true,
   autoColSize: true,
+  columnSorting: true,
 }
 
 document.addEventListener("DOMContentLoaded", function () {

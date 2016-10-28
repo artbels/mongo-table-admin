@@ -67,7 +67,7 @@ alt="add rows" width="480" height="270" border="10" /></a>
 - [*] use ace editor for json edit
 - [*] set projection and limit for query
 - [*] manage projection as a table, not a JSON  
-- [ ] add/delete/rename multiple fields at once
+- [ ] add/rename multiple fields at once
 - [ ] refactor schema management  
 - [ ] select whether to run function for the whole collection or based on query  
 - [ ] refactor "create" view  
