@@ -81,79 +81,94 @@
 
   func.addField = function () {
     swal({
-      title: 'Add column',
+      title: 'Add column(s)',
       html: "<div id='swal-div' align='center'></div>",
       showCancelButton: true,
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
-
-        UI.input({
-          placeholder: 'Field name',
-          id: 'field-name',
-          className: '',
-          parent: swalNode,
-          value: '',
-          style: {
-            width: '180px',
-            textAlign: 'center'
-          }
-        })
-
-        document.querySelector('#field-name').onkeyup = checkFieldExist
-        document.querySelector('#field-name').onchange = checkFieldExist
-
-        function checkFieldExist () {
-          var fieldName = document.querySelector('#field-name').value
-          if (HotConfig.instance.getColHeader().indexOf(fieldName) != -1) {
-            swal.showValidationError(fieldName + ' is already exists')
-            swal.disableButtons()
-          } else {
-            swal.resetValidationError()
-            swal.enableButtons()
-          }
-        }
-
-        UI.br({
-          id: 'add-column-span',
-          parent: swalNode
-        })
-
-        UI.select(Object.keys(HH.typesMap), {
-          placeholder: 'Field type',
-          id: 'field-type',
-          parent: swalNode
-        }, function () {})
-
-        document.querySelector('#field-typeSelect').value = 'string'
+        addRow(swalNode, 0)
       }
     }).then(function () {
-      var propNode = document.querySelector('#field-name')
-      var jsTypeNode = document.querySelector('#field-typeSelect')
+      var divNodes = document.querySelectorAll('.add-field-div')
+      for (var i = 0; i < divNodes.length; i++) {
+        var divNode = divNodes[i]
 
-      if (!propNode || !propNode.value) {
-        return swal({
-          type: 'warning',
-          title: 'no field name'
-        })
+        var fieldName = divNode.querySelector('input.field-name').value
+        if (!fieldName) continue
+        var fieldType = divNode.querySelector('select.field-type > option:checked').value
+        if (/select/g.test(fieldType)) continue
+
+        var col = HH.setColType(fieldName, fieldType || 'string')
+
+        HotConfig.columns.push(col)
+        HotConfig.colHeaders.push(col.data)
       }
-
-      if (HotConfig.colHeaders.indexOf(propNode.value) != -1) {
-        return swal({
-          type: 'warning',
-          title: propNode.value + ' already exists'
-        })
-      }
-
-      var col = HH.setColType(propNode.value, jsTypeNode.value || 'string')
-
-      HotConfig.columns.push(col)
-      HotConfig.colHeaders.push(col.data)
 
       HotConfig.instance.updateSettings({
         colHeaders: HotConfig.colHeaders,
         columns: HotConfig.columns
       })
-    }).catch(function () {})
+    })
+
+    function addRow (swalNode, row) {
+      UI.div({
+        id: 'row' + row,
+        parent: swalNode,
+        className: 'add-field-div'
+      })
+      var divNode = document.querySelector('#' + 'row' + row)
+      var currRow = JSON.parse(JSON.stringify(row))
+
+      UI.input({
+        placeholder: 'Field name',
+        className: 'field-name',
+        parent: divNode,
+        id: 'field-name' + row,
+        value: '',
+        style: {
+          width: '180px',
+          textAlign: 'center'
+        }
+      })
+
+      UI.select(Object.keys(HH.typesMap), {
+        placeholder: 'Field type',
+        className: 'field-type',
+        id: 'field-type' + row,
+        parent: divNode
+      }, function () {
+        row++
+        addRow(swalNode, row)
+      })
+
+      document.querySelector('#field-name' + currRow).onkeyup = checkFieldExist
+      document.querySelector('#field-name' + currRow).onchange = checkFieldExist
+    }
+
+    function checkFieldExist (e) {
+      var fieldName = e.target.value
+      var hhFields = HotConfig.instance.getColHeader()
+      var allFields = hhFields.concat(getNames(e.target.id))
+
+      if (allFields.indexOf(fieldName) != -1) {
+        swal.showValidationError(fieldName + ' is already exists')
+        swal.disableButtons()
+      } else {
+        swal.resetValidationError()
+        swal.enableButtons()
+      }
+    }
+
+    function getNames (exclude) {
+      var divNodes = document.querySelectorAll('.add-field-div')
+      var fieldArr = []
+      for (var i = 0; i < divNodes.length; i++) {
+        var divNode = divNodes[i]
+        var fieldNode = divNode.querySelector('input.field-name')
+        if (fieldNode.id !== exclude) fieldArr.push(fieldNode.value)
+      }
+      return fieldArr
+    }
   }
 
   func.renameField = function () {
@@ -164,13 +179,14 @@
 
     if (o.view === 'table') {
       noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r != '_id') return r
+        if (r !== '_id') return r
       })
     } else {
       var props = {}
       for (var i = 0; i < data.length; i++) {
         var row = data[i]
         for (var key in row) {
+          if (key === '_id') continue
           props[key] = true
         }
       }
@@ -205,6 +221,28 @@
             textAlign: 'center'
           }
         })
+
+        document.querySelector('#new-name').onkeyup = checkFieldExist
+        document.querySelector('#new-name').onchange = checkFieldExist
+
+        function checkFieldExist (e) {
+          var fieldName = e.target.value
+          var noIdColHeaders = []
+
+          Query.getSchema().forEach(function (a) {
+            if (a.id !== '_id') {
+              noIdColHeaders.push(a.id)
+            }
+          })
+
+          if (noIdColHeaders.indexOf(fieldName) !== -1) {
+            swal.showValidationError(fieldName + ' is already exists')
+            swal.disableButtons()
+          } else {
+            swal.resetValidationError()
+            swal.enableButtons()
+          }
+        }
       }
     }).then(function () {
       params.old = document.querySelector('#field-to-renameSelect').value

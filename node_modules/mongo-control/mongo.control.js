@@ -583,7 +583,7 @@ MC.updateById = function (params) {
       }, updObj, function (e, r) {
         if (e) return err(e)
 
-        if (Object.keys(r).length || !objId) {
+        if (r.result.nModified || !objId) {
           res(r)
           db.close()
         } else {

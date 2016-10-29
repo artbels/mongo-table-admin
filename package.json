@@ -42,11 +42,11 @@
     "handsontable-helpers": "^1.1.5",
     "jquery": "^2.2.4",
     "jszip": "^3.1.3",
-    "mongo-control": "^1.0.45",
+    "mongo-control": "^1.0.46",
     "mongodb": "^2.2.11",
     "morgan": "~1.7.0",
     "papaparse": "^4.1.2",
-    "pivottable": "^2.1.0",
+    "pivottable": "^2.3.0",
     "simple-ui-builder": "^1.1.1",
     "sweetalert2": "^4.3.3",
     "xlsx": "^0.8.0"
