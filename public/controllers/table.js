@@ -31,11 +31,14 @@ function countDataMongo (params) {
     if(!num && (JSON.stringify(Query.getLimit()) === '{}')) {
       var o = Router.getDb()
       location.pathname = '/' + o.title + '/' + o.urlDbName + '/'
+    
     } else if (num === 0 ) {
       swal({title: "0 documents found", type: "info"}).done()
+    
     } else if (num < 1000) {
       spinner.spin(document.body)
       getDataMongo(params)
+    
     } else {
       Blocks.tooMuchRows(num, function (limit) {        
         params.limit = limit
@@ -50,16 +53,20 @@ function getDataMongo (params) {
   spinner.spin(document.body)
 
   T.post('/mongo/find/', params).then(function (arr) {
+
     spinner.stop()
 
-    HotConfig.columns = HH.getColumns(arr)
-    var data = HH.stringifyArrObj(arr)
+    var schema = Query.buildSchema(arr)
+    Query.enrichSchema(schema)
 
+    HotConfig.columns = Query.getColumns()
+    var data = HH.stringifyArrObj(arr)
     HH.draw(data, HotConfig)
 
     if(Query.getLimit()) {
       updateStatusDelayed((arr.length - 1) + ' loaded due to limit', 0)
     } else updateStatusDelayed((arr.length - 1) + ' rows found', 0)
+    
     updateStatusDelayed('Autosaving changes', 5000)
   })
 }

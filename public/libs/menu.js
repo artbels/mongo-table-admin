@@ -49,14 +49,15 @@
   }
 
   func.browseSchema = function () {
-    var params = Query.getParams()
 
-    T.post('/mongo/schema/', params).then(function (obj) {
+    Query.getSchema().then(function(schema) {
       var tableArr = []
 
-      for (var prop in obj) {
-        var val = obj[prop]
-        tableArr.push({value: prop, count: val})
+      for (var prop in schema) {
+        if (prop !== '_id') tableArr.push({
+          field: prop,
+          type: schema[prop]
+        })
       }
 
       swal({
@@ -74,7 +75,6 @@
 
   func.refreshSchema = function () {
     Query.updateSchema()
-    func.browseSchema()
   }
 
   func.getSchema = func.browseSchema
@@ -98,6 +98,10 @@
         var fieldType = divNode.querySelector('select.field-type > option:checked').value
         if (/select/g.test(fieldType)) continue
 
+        var newSchema = {}        
+        newSchema[fieldName] = fieldType
+        Query.enrichSchema(newSchema)
+
         var col = HH.setColType(fieldName, fieldType || 'string')
 
         HotConfig.columns.push(col)
@@ -108,7 +112,7 @@
         colHeaders: HotConfig.colHeaders,
         columns: HotConfig.columns
       })
-    })
+    }).catch(function () {})
 
     function addRow (swalNode, row) {
       UI.div({
@@ -147,16 +151,23 @@
 
     function checkFieldExist (e) {
       var fieldName = e.target.value
-      var hhFields = HotConfig.instance.getColHeader()
-      var allFields = hhFields.concat(getNames(e.target.id))
+
+      if(/^\d/.test(fieldName)) {
+        swal.showValidationError("please don't start field name with numbers")
+        return swal.disableButtons()
+      } 
+
+      var schema = Query.getSchemaLs()
+      var fields = Object.keys(schema)
+      var allFields = fields.concat(getNames(e.target.id))
 
       if (allFields.indexOf(fieldName) != -1) {
         swal.showValidationError(fieldName + ' is already exists')
-        swal.disableButtons()
-      } else {
-        swal.resetValidationError()
-        swal.enableButtons()
+        return swal.disableButtons()
       }
+
+      swal.resetValidationError()
+      swal.enableButtons()      
     }
 
     function getNames (exclude) {
@@ -172,26 +183,12 @@
   }
 
   func.renameField = function () {
-    var o = Router.getDb()
     var params = Query.getParams()
 
-    var noIdColHeaders = []
-
-    if (o.view === 'table') {
-      noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r !== '_id') return r
-      })
-    } else {
-      var props = {}
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
-        for (var key in row) {
-          if (key === '_id') continue
-          props[key] = true
-        }
-      }
-      noIdColHeaders = Object.keys(props)
-    }
+    var schema = Query.getSchemaLs()
+    var fields = Object.keys(schema).filter(function(a) {
+      if(a !== '_id') return a
+    })
 
     swal({
       title: 'Rename field',
@@ -200,7 +197,7 @@
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.select(noIdColHeaders, {
+        UI.select(fields, {
           id: 'field-to-rename',
           parent: swalNode
         }, function () {})
@@ -227,15 +224,10 @@
 
         function checkFieldExist (e) {
           var fieldName = e.target.value
-          var noIdColHeaders = []
+          var schema = Query.getSchemaLs()
+          var fields = Object.keys(schema)
 
-          Query.getSchema().forEach(function (a) {
-            if (a.id !== '_id') {
-              noIdColHeaders.push(a.id)
-            }
-          })
-
-          if (noIdColHeaders.indexOf(fieldName) !== -1) {
+          if (fields.indexOf(fieldName) !== -1) {
             swal.showValidationError(fieldName + ' is already exists')
             swal.disableButtons()
           } else {
@@ -255,6 +247,10 @@
         })
       }
 
+      schema[params.new] = schema[params.old]
+      delete schema[params.old]
+      Query.setSchema(schema)
+
       T.post('/mongo/rename/', params).then(function (r) {
         if (r && r.ok && (r.ok == 1)) {
           location.reload()
@@ -266,13 +262,15 @@
   func.deleteField = function () {
     var params = Query.getParams()
 
-    var noIdColHeaders = []
+    var schema = Query.getSchemaLs()
 
-    Query.getSchema().forEach(function (a) {
-      if (a.id !== '_id') {
-        noIdColHeaders.push({field: a.id})
-      }
-    })
+    var tableArr = []
+    for (var prop in schema) {
+      if (prop !== '_id') tableArr.push({
+          field: prop,
+          type: schema[prop]
+        })
+    }
 
     swal({
       title: 'Delete fields',
@@ -281,7 +279,7 @@
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.table(noIdColHeaders, {
+        UI.table(tableArr, {
           id: 'fields-to-delete',
           parent: swalNode,
           selectable: true
@@ -293,8 +291,9 @@
       var remArr = []
 
       fields.forEach(function (i) {
-        remArr.push(noIdColHeaders[i].field)
-      })
+        remArr.push(tableArr[i].field)
+        delete schema[tableArr[i].field]
+      })      
 
       if (!remArr.length) {
         return swal({
@@ -302,6 +301,8 @@
           title: 'no fields to delete'
         })
       }
+
+      Query.setSchema(schema)
 
       params.fields = JSON.stringify(remArr)
 
@@ -316,12 +317,9 @@
   func.getDistinct = function () {
     var params = Query.getParams()
 
-    var noIdColHeaders = []
-
-    Query.getSchema().forEach(function (a) {
-      if (a.id !== '_id') {
-        noIdColHeaders.push(a.id)
-      }
+    var schema = Query.getSchemaLs()
+    var fields = Object.keys(schema).filter(function(a) {
+      if(a !== '_id') return a
     })
 
     swal({
@@ -331,7 +329,7 @@
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.select(noIdColHeaders, {
+        UI.select(fields, {
           id: 'field-to-distinct',
           parent: swalNode
         }, function () {})
@@ -367,25 +365,12 @@
   }
 
   func.findDupes = function () {
-    var o = Router.getDb()
     var params = Query.getParams()
 
-    var noIdColHeaders = []
-
-    if (o.view === 'table') {
-      noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r != '_id') return r
-      })
-    } else {
-      var props = {}
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
-        for (var key in row) {
-          props[key] = true
-        }
-      }
-      noIdColHeaders = Object.keys(props)
-    }
+    var schema = Query.getSchemaLs()
+    var fields = Object.keys(schema).filter(function(a) {
+      if(a !== '_id') return a
+    })
 
     swal({
       title: 'Find dupe values values',
@@ -394,7 +379,7 @@
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.select(noIdColHeaders, {
+        UI.select(fields, {
           id: 'field',
           parent: swalNode
         }, function () {})
@@ -430,25 +415,12 @@
   }
 
   func.groupCount = function () {
-    var o = Router.getDb()
     var params = Query.getParams()
 
-    var noIdColHeaders = []
-
-    if (o.view === 'table') {
-      noIdColHeaders = HotConfig.instance.getColHeader().filter(function (r) {
-        if (r != '_id') return r
-      })
-    } else {
-      var props = {}
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
-        for (var key in row) {
-          props[key] = true
-        }
-      }
-      noIdColHeaders = Object.keys(props)
-    }
+    var schema = Query.getSchemaLs()
+    var fields = Object.keys(schema).filter(function(a) {
+      if(a !== '_id') return a
+    })
 
     swal({
       title: 'Count grouped values',
@@ -457,7 +429,7 @@
       onOpen: function () {
         var swalNode = document.querySelector('#swal-div')
 
-        UI.select(noIdColHeaders, {
+        UI.select(fields, {
           id: 'field',
           parent: swalNode
         }, function () {})
@@ -513,7 +485,7 @@
 
     document.querySelector('#create-indexes-footer').align = 'center'
 
-    Blocks.getSchema(Query.getParams(), function (r) {
+    Query.getSchema().then(function (r) {
       var tableArr = []
       var tableParams = {
         id: 'create-indexes-table',
@@ -786,140 +758,5 @@
 
     var fileName = o.collection || 'renameMe'
     download(JSON.stringify(arr), fileName + '.json', 'application/json')
-  }
-
-  /**
-   * Refactor
-   */
-
-  function openVisualQuery () {
-    var params = Controls.getCollectionFromUrl()
-
-    T.post('/mongo/keys/', params).then(function (fields) {
-      if (!fields || !fields.length) return
-
-      var conditions = {
-        'exists': {
-          '$exists': true
-        },
-        'not exist': {
-          '$exists': false
-        },
-        'equals': {
-          '$eq': 'value'
-        },
-        'not equal': {
-          '$ne': 'value'
-        },
-        'regex': {
-          '$regex': 'value'
-        },
-        'less than': {
-          '$lt': 'value'
-        },
-        'greater than': {
-          '$gt': 'value'
-        },
-        'less/equal': {
-          '$lte': 'value'
-        },
-        'greater/equal': {
-          '$gte': 'value'
-        },
-        'is true': {
-          '$eq': true
-        },
-        'is false': {
-          '$eq': false
-        },
-        'is null': {
-          '$eq': null
-        }
-      }
-
-      var clonedFields = JSON.parse(JSON.stringify(fields))
-      var row = 1
-
-      swal({
-        title: 'Query',
-        html: "<div id='swal-div'></div>",
-        onOpen: function () {
-          addRow(clonedFields, row)
-        }
-      }).then(function () {
-        var query = {}
-
-        var divNodes = document.querySelectorAll('.cond-div')
-        for (var i = 0; i < divNodes.length; i++) {
-          var divNode = divNodes[i]
-          var field = divNode.querySelector('select.field > option:checked').value
-          if (/select/g.test(field)) continue
-
-          var condNode = divNode.querySelector('select.cond > option:checked')
-          if (!condNode) continue
-          var cond = conditions[condNode.value]
-          var mongoCond = Object.keys(cond)[0]
-          var value = cond[mongoCond]
-
-          if (value == 'value') {
-            var valueNode = divNode.querySelector('input.value')
-            if (!valueNode) continue
-            var clonedCond = JSON.parse(JSON.stringify(cond))
-            var mongoClonedCond = Object.keys(clonedCond)[0]
-            clonedCond[mongoClonedCond] = valueNode.value
-            query[field] = clonedCond
-          } else query[field] = cond
-        }
-
-        localStorage['query' + params.db + params.collection] = JSON.stringify(query)
-        location.reload()
-      }).catch(function () {})
-
-      function addRow (clonedFields, row) {
-        var parent = document.querySelector('#swal-div')
-
-        UI.div({
-          id: 'row' + row,
-          parent: parent,
-          className: 'cond-div'
-
-        })
-        var divNode = document.querySelector('#' + 'row' + row)
-        var currRow = JSON.parse(JSON.stringify(row))
-
-        UI.select(clonedFields, {
-          id: 'field' + currRow,
-          parent: divNode,
-          className: 'field'
-        }, function (field) {
-          row++
-          var elemPos = clonedFields.indexOf(field)
-          clonedFields.splice(elemPos, 1)
-
-          if (clonedFields.length) addRow(clonedFields, row)
-
-          UI.select(Object.keys(conditions), {
-            id: 'cond' + currRow,
-            parent: divNode,
-            className: 'cond'
-          }, function (condition) {
-            var mongoCond = Object.keys(conditions[condition])[0]
-            var value = conditions[condition][mongoCond]
-
-            if (value == 'value') {
-              UI.input({
-                value: '',
-                id: 'value' + currRow,
-                parent: divNode,
-                className: 'value',
-                style: {
-                  width: '150px'
-                }
-              })
-            }
-          })
-        })
-      }
-    })
   }
 })()

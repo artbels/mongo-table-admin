@@ -218,14 +218,4 @@
       }, 10)
     }
   }
-
-  Blocks.getSchema = function (params, cb) {
-
-    spinner.spin(document.body)
-
-    T.post('/mongo/schema/', params).then(function (schema) {
-      spinner.stop()
-      cb(schema)
-    })
-  }
 })()

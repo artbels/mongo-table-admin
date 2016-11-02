@@ -29,9 +29,145 @@
     localStorage[pth() + 'limit'] = limit
   }
 
+  Query.getSchemaLs = function () {
+    return JSON.parse(localStorage[pth() + 'schema'] || '{}')
+  }
+
+  Query.getSchema = function () {
+    return new Promise(function (res, err) {
+      var strSchema = localStorage[pth() + 'schema']
+      if (strSchema && ((strSchema !== '{}') || (strSchema.slice(0, 1) === '['))) return res(JSON.parse(strSchema))
+
+      spinner.spin(document.body)
+      T.post('/mongo/schema/', params).then(function (schema) {
+        spinner.stop()
+
+        if (!schema || !Object.keys(schema).length) return res({})
+
+        Query.setSchema(schema)
+        res(schema)
+      }).catch(err)
+    })
+  }
+
+  Query.updateSchema = function () {
+    spinner.spin(document.body)
+    T.post('/mongo/schema/', Query.getParams()).then(function (schema) {
+      spinner.stop()
+
+      if (!schema || !Object.keys(schema).length) return swal({title: 'Empty collection', type: 'warning'}).done()
+
+      Query.setSchema(schema)
+      if (isVisualQueryLoaded) {
+        var filters = convSchema2Fields(schema)
+        $('div#' + queryBuilderDiv).queryBuilder('setFilters', true, filters)
+      }
+    })
+  }
+
+  Query.enrichSchema = function (newSchema) {
+    var schema = JSON.parse(localStorage[pth() + 'schema'] || '{}')
+
+    if (schema.constructor !== Array) {
+      for (var key in newSchema) {
+        schema[key] = newSchema[key]
+      }
+    } else schema = newSchema
+
+    localStorage[pth() + 'schema'] = JSON.stringify(Query.sortSchema(schema), null, 2)
+  }
+
   Query.setSchema = function (schema) {
     if (typeof schema === 'object') schema = JSON.stringify(schema, null, 2)
     localStorage[pth() + 'schema'] = schema
+  }
+
+  Query.sortSchema = function (schema) {
+    var newSchema = {}
+
+    var fields = Object.keys(schema).sort(function (a, b) {
+      if (a.toUpperCase() > b.toUpperCase()) return 1
+      return -1
+    })
+
+    fields.unshift(fields.pop())
+
+    for (var j = 0; j < fields.length; j++) {
+      var prop = fields[j]
+      newSchema[prop] = schema[prop]
+    }
+    return newSchema
+  }
+
+  Query.buildSchema = function (arr) {
+    var uniq = {}
+
+    for (var i = 0; i < arr.length; i++) {
+      for (var key in arr[i]) {
+        uniq[key] = getType(arr[i][key])
+      }
+    }
+
+    return Query.sortSchema(uniq)
+
+    function getType (val) {
+      var reJsStrData = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z/i
+      var type = typeof val
+      if (type === 'object') {
+        if (val !== null) {
+          var objConstr = val
+            .constructor
+            .toString()
+            .split(' ')[1]
+            .split('(')[0]
+            .toLowerCase()
+          type = objConstr
+        } else type = 'null'
+      } else if (type === 'string') {
+        if (reJsStrData.test(val)) type = 'date'
+      }
+      return type
+    }
+  }
+
+  Query.getColumns = function () {
+    var schema = JSON.parse(localStorage[pth() + 'schema'] || '{}')
+    var projection = Query.getProjection()
+
+    var columns = []
+
+    for (var prop in schema) {
+      columns.push(HH.setColType(prop, schema[prop]))
+    }
+
+    columns.sort(function (a, b) {
+      if (a.data.toUpperCase() > b.data.toUpperCase()) return 1
+      return -1
+    })
+
+    columns.unshift(columns.pop())
+
+    if(Object.keys(projection).length) {
+
+      var positiveProj = true
+      for (var key in projection) {
+        var val = projection[key]
+        if(val === 0) {
+          positiveProj = false
+          break
+        }
+      }
+
+      columns = columns.filter(function(a) {
+        if(positiveProj) {
+          if(projection[a.data]) return a
+        } else {
+          if(projection[a.data] !== 0) return a
+        }
+      })
+    }   
+
+    return columns
   }
 
   Query.getQuery = function () {
@@ -46,12 +182,6 @@
     return parseInt(localStorage[pth() + 'limit'] || '')
   }
 
-  Query.getSchema = function (cb) {
-    cb = cb || function () {}
-    cb(JSON.parse(localStorage[pth() + 'schema'] || '{}'))
-    return JSON.parse(localStorage[pth() + 'schema'] || '{}')
-  }
-
   Query.reset = function () {
     Query.setQuery({})
     location.reload()
@@ -60,7 +190,7 @@
   Query.show = function (tab) {
     $('#query-modal').modal('show')
     var node = document.querySelector('#' + tab)
-    if(node) node.click()
+    if (node) node.click()
   }
 
   var isVisualQueryLoaded = false
@@ -130,13 +260,7 @@
       }
     }
 
-    T.post('/mongo/schema/', Query.getParams()).then(function (schema) {
-      spinner.stop()
-
-      var filters = convSchema2Fields(schema)
-
-      buildModal(filters)
-    })
+    buildModal()
   }
 
   /**
@@ -145,96 +269,94 @@
 
   function buildProjectionTable () {
     var proj = Query.getProjection()
-    var schema = Query.getSchema()
+    Query.getSchema().then(function (schema) {
+      var tableArr = []
+      for (var prop in schema) {
+        if (prop !== '_id') tableArr.push({
+            field: prop,
+            type: schema[prop]
+          })
+      }
 
-    var tableArr = schema.filter(function (item, i) {
-      if (schema[i].id !== '_id') return item
-    })
+      var targetNode = document.querySelector('#projection-div')
+      // targetNode.align = 'center'
 
-    tableArr = tableArr.map(function (item) {
-      item.field = item.id
-      delete item.id
-      return item
-    })
+      var projParams = {
+        parent: targetNode,
+        cols: ['field', 'type', 'show', 'hide'],
+        id: 'projection-table'
+      }
 
-    var targetNode = document.querySelector('#projection-div')
-    // targetNode.align = 'center'
+      UI.table(tableArr, projParams)
 
-    var projParams = {
-      parent: targetNode,
-      cols: ['field', 'type', 'show', 'hide'],
-      id: 'projection-table'
-    }
-
-    UI.table(tableArr, projParams)
-
-    tableArr.forEach(function (a, i) {
-      var showNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(3)')
-      var hideNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(4)')
-      UI.checkbox({
-        id: 'show' + i,
-        parent: showNode,
-        checked: (proj[a.field] === 1)
-      }, function(r) {
-        setProjDispatcher(r, tableArr)
+      tableArr.forEach(function (a, i) {
+        var showNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(3)')
+        var hideNode = document.querySelector('#projection-table > tbody > tr#r' + i + ' > td:nth-child(4)')
+        UI.checkbox({
+          id: 'show' + i,
+          parent: showNode,
+          checked: (proj[a.field] === 1)
+        }, function (r) {
+          setProjDispatcher(r, tableArr)
+        })
+        UI.checkbox({
+          id: 'hide' + i,
+          parent: hideNode,
+          checked: (proj[a.field] === 0)
+        }, function (r) {
+          setProjDispatcher(r, tableArr)
+        })
       })
-      UI.checkbox({
-        id: 'hide' + i,
-        parent: hideNode,
-        checked: (proj[a.field] === 0)
-      }, function(r) {
-        setProjDispatcher(r, tableArr)
-      })
-    })
 
-    if(!areAllShowFalse()) toggleDisabled (true)
+      if (!areAllShowFalse()) toggleDisabled(true)
+    })
   }
 
-function toggleDisabled (bool) {
-      var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
-      var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+  function toggleDisabled (bool) {
+    var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
+    var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
 
-      for (var i = 0; i < hideNodes.length; i++) {
-        if (!bool && areAllShowFalse (showNodes)) {
-          hideNodes[i].disabled = false
-        } else if (bool) {
-          hideNodes[i].disabled = true
-        }
+    for (var i = 0; i < hideNodes.length; i++) {
+      if (!bool && areAllShowFalse(showNodes)) {
+        hideNodes[i].disabled = false
+      } else if (bool) {
+        hideNodes[i].disabled = true
       }
     }
+  }
 
   function areAllShowFalse (showNodes) {
-      showNodes = showNodes || document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+    showNodes = showNodes || document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
 
-      var allFalse = true
-      showNodes.forEach(function (a) {
-        if (a.checked) allFalse = false
-      })
-      return allFalse
-    }
+    var allFalse = true
+    showNodes.forEach(function (a) {
+      if (a.checked) allFalse = false
+    })
+    return allFalse
+  }
 
   function setProjDispatcher (r, tableArr) {
-      var bool = JSON.parse(r.split(' ')[1])
-      var type = r.slice(0, 4)
-      var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
-      var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
-      var newProjection = {}
+    var bool = JSON.parse(r.split(' ')[1])
+    var type = r.slice(0, 4)
+    var showNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(3) > input[type=checkbox]')
+    var hideNodes = document.querySelectorAll('#projection-table > tbody > tr > td:nth-child(4) > input[type=checkbox]')
+    var newProjection = {}
 
-      if (type === 'show') {
-        toggleDisabled(bool)
-      }
-
-      for (var i = 0; i < tableArr.length; i++) {
-        var field = tableArr[i].field
-        if (showNodes[i].checked) {
-          newProjection[field] = 1
-        } else if (hideNodes[i].checked && areAllShowFalse (showNodes)) {
-          newProjection[field] = 0
-        }
-      }
-
-      Query.setProjection(newProjection)
+    if (type === 'show') {
+      toggleDisabled(bool)
     }
+
+    for (var i = 0; i < tableArr.length; i++) {
+      var field = tableArr[i].field
+      if (showNodes[i].checked) {
+        newProjection[field] = 1
+      } else if (hideNodes[i].checked && areAllShowFalse(showNodes)) {
+        newProjection[field] = 0
+      }
+    }
+
+    Query.setProjection(newProjection)
+  }
 
   function buildModal () {
     Blocks.ace(jsonParams)
@@ -299,41 +421,6 @@ function toggleDisabled (bool) {
     UI.button({innerHTML: 'Cancel', parent: '#query-modal-footer'}, function () {
       $('#query-modal').modal('hide')
     })
-  }
-
-  Query.updateSchema = function () {
-    spinner.spin(document.body)
-    T.post('/mongo/schema/', params).then(function (schema) {
-      spinner.stop()
-
-      if (!schema || !Object.keys(schema).length) return swal({title: 'Empty collection', type: 'warning'}).done()
-
-      var filters = convSchema2Fields(schema)
-
-      Query.setSchema(filters)
-      if (isVisualQueryLoaded) {
-        $('div#' + queryBuilderDiv).queryBuilder('setFilters', true, filters)
-      }
-    })
-  }
-
-  function getKeys (cb) {
-    if (Query.getSchema() && (JSON.stringify(Query.getSchema()) != '{}')) {
-      cb(Query.getSchema())
-    } else {
-      spinner.spin(document.body)
-
-      T.post('/mongo/schema/', params).then(function (schema) {
-        spinner.stop()
-
-        if (!schema || !Object.keys(schema).length) return cb([])
-
-        var filters = convSchema2Fields(schema)
-
-        Query.setSchema(filters)
-        cb(filters)
-      })
-    }
   }
 
   function convSchema2Fields (schema) {
@@ -430,8 +517,9 @@ function toggleDisabled (bool) {
         switchTabs(thisNode)
       } else switchTabs(thisNode)
     } else if (thisNode.id === 'visual-query') {
-      getKeys(function (filters) {
-        console.log(filters)
+      Query.getSchema().then(function (schema) {
+        var filters = convSchema2Fields(schema)
+
         if (!isVisualQueryLoaded) {
           updateSchemaHint()
           try {
@@ -452,7 +540,7 @@ function toggleDisabled (bool) {
           })
         }
       })
-    } else if(thisNode.id === 'projection') {
+    } else if (thisNode.id === 'projection') {
       buildProjectionTable()
       switchTabs(thisNode)
     } else {
