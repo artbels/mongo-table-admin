@@ -62,13 +62,13 @@ alt="add rows" width="480" height="270" border="10" /></a>
 
 ### plans
 - [*] multiple times faster saving and deleting using concurrent requests and grouping
-- [*] use JQuery QueryBuilder to build queries visually
+- [*] use Visual QueryBuilder to build queries
 - [*] switch to Handsontable BeforeRemoveRow and BeforeChange events
 - [*] use ace editor for json edit
 - [*] set projection and limit for query
 - [*] manage projection as a table, not a JSON  
-- [ ] add/rename multiple fields at once
-- [ ] refactor schema management  
+- [*] add/delete multiple fields at once
+- [*] refactor schema management  
 - [ ] select whether to run function for the whole collection or based on query  
 - [ ] refactor "create" view  
 

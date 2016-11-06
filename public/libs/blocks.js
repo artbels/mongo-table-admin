@@ -231,7 +231,7 @@
                   var o = Router.getDb()
                   location.pathname = '/' + o.title + '/' + o.urlDbName + '/' + params.collection + '/table/'
                 }).catch(function () {
-                  location.reload()
+                  location.pathname = '/' + o.title + '/' + o.urlDbName + '/create/'
                 })
                 spinner.stop()
               }
