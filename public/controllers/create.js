@@ -232,26 +232,34 @@ function setColumnType (i, type, instance) {
 
   var hotData = hot.getData()
 
-  for (var j = 0; j < hotData.length; j++) {
-    var jtem = hotData[j]
+  spinner.spin(document.body)
+
+  T.iter(hotData, function(jtem, cb, p) {
     var cell = jtem[i]
-    if ((cell === null) || (cell === '')) continue
+    if ((cell === null) || (cell === '')) return cb()
+
     switch (type) {
       case 'number':
         var formattedNumeral = Number(cell)
-        hot.setDataAtCell(j, i, formattedNumeral)
+        hot.setDataAtCell(p.index, i, formattedNumeral)
         break
 
       case 'date':
         var formattedDate = moment(new Date(cell)).format('DD-MMM-YYYY')
-        hot.setDataAtCell(j, i, formattedDate)
+        hot.setDataAtCell(p.index, i, formattedDate)
         break
 
       case 'boolean':
-        hot.setDataAtCell(j, i, getBool(cell))
+        hot.setDataAtCell(p.index, i, getBool(cell))
         break
     }
-  }
+    cb()
+  }, {
+    concurrency: 100,
+    cb: function () {
+      spinner.stop()
+    }
+  })
 
   function getBool (val) {
     var num = +val
