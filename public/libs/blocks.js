@@ -124,59 +124,84 @@
   }
 
   Blocks.saveDataMongo = function (arr) {
-    var html = 'Enter collection name'
+    var dbObj = Router.getDb()
+
+    var html = 'Enter database and collection name'
     html += "<div align='center' id='swal-div'></div>"
+
+    if (!arr || !arr.length) return swal({
+        title: 'nothing to save!',
+        timer: 800,
+        type: 'warning'
+      }).done()
 
     swal({
       // title: "Mongo URL",
       html: html,
       allowEscapeKey: false,
-      showConfirmButton: false,
+      confirmButtonText: 'Save',
+      showCancelButton: true,
       onOpen: function () {
         var swalDiv = document.querySelector('#swal-div')
 
         UI.input({
           parent: swalDiv,
-          id: 'collection',
-          placeholder: 'collection',
+          id: 'database',
+          placeholder: 'database',
+          value: dbObj.urlDbName || dbObj.connPathDbName || '',
           style: {
             fontSize: '120%',
             textAlign: 'center'
           }
         })
 
-        UI.button({
+        UI.br(1)
+
+        UI.input({
           parent: swalDiv,
-          id: 'save-arr',
-          innerHTML: 'Save',
-          className: 'btn btn-primary'
-        }, function () {
-          if (arr && arr.length)
-            saveArrMongoChunks(arr)
-          else
-            swal({
-              title: 'nothing to save!',
-              timer: 800,
-              type: 'warning'
-            }).done()
+          id: 'collection',
+          placeholder: 'collection',
+          value: dbObj.collection || '',
+          style: {
+            fontSize: '120%',
+            textAlign: 'center'
+          }
         })
 
-        UI.button({
-          parent: swalDiv,
-          id: 'cancel',
-          innerHTML: 'Cancel'
-        }, function () {
-          swal.close()
+        document.querySelector('#database').onkeyup = checkValid
+        document.querySelector('#database').onchange = checkValid
+        document.querySelector('#collection').onkeyup = checkValid
+        document.querySelector('#collection').onchange = checkValid
+
+        function checkValid (e) {
+          var dbName = e.target.value
+          if (/^[^a-z]/.test(dbName)) {
+            swal.showValidationError(' please start name with latin letter')
+            swal.disableButtons()
+          } else {
+            swal.resetValidationError()
+            swal.enableButtons()
+          }
+        }
+      },
+      preConfirm: function () {
+        var collection = document.querySelector('#collection').value
+        var dbName = document.querySelector('#database').value
+
+        return new Promise(function (resolve) {
+          if (dbName && collection) {
+            resolve({dbName, collection})
+          } else {
+            swal.showValidationError('Please set database and collection name')
+          }
         })
       }
+    }).then(function (params) {
+      saveArrMongoChunks(arr, params)
     }).catch(function () {})
 
-    function saveArrMongoChunks (arr) {
-      if (!arr || !arr.length) return swal({
-          title: 'Nothing to save',
-          timer: 800,
-          type: 'warning'
-        }).done()
+    function saveArrMongoChunks (arr, params) {
+      params.db = dbObj.connStr + '/' + params.dbName
 
       spinner.spin(document.body)
 
@@ -189,24 +214,22 @@
           var start = currChunk * chunkSize
           var currArr = arr.slice(start, chunkSize * (currChunk + 1))
 
-          var params = Query.getParams()
-          params.collection = document.querySelector('#collection').value
           params.data = JSON.stringify(currArr)
-          
+
           $.post('/mongo/insert/', params, function (r) {
             if (r && r.result && r.result.ok && (r.result.ok == 1)) {
               currChunk++
               if (currChunk < chunks) workChunk()
               else {
                 swal({
-                  type: "success", 
-                  title: 'everything saved!', 
+                  type: 'success',
+                  title: 'everything saved!',
                   confirmButtonText: 'Go to collection',
                   showCancelButton: true,
-                  cancelButtonText: 'Create another collection',
+                  cancelButtonText: 'Create another collection'
                 }).then(function () {
                   var o = Router.getDb()
-                  location.pathname = '/' + o.title + '/' + o.urlDbName  + '/' + params.collection + '/table/'
+                  location.pathname = '/' + o.title + '/' + o.urlDbName + '/' + params.collection + '/table/'
                 }).catch(function () {
                   location.reload()
                 })

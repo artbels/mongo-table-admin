@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
   Query.load()
   var addFieldNote = document.querySelector("#addField")
   addFieldNote.parentNode.removeChild(addFieldNote)
+
+  var deleteFieldNote = document.querySelector("#deleteField")
+  deleteFieldNote.parentNode.removeChild(deleteFieldNote)
 })
 
 var params = Query.getParams()
