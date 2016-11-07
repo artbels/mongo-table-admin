@@ -92,7 +92,7 @@ function setHeadersFirstRow () {
   var newColumns = []
   var deleteCols = []
   var colWidths = []
-    console.log(data)
+  console.log(data)
 
   for (var i in firstRow) {
     var name = firstRow[i]
@@ -132,6 +132,7 @@ function setHeadersFirstRow () {
 }
 
 function afterGetColHeader (col, TH) {
+  // console.log(col, TH)
   if (col == -1) return
 
   var instance = this,
@@ -234,7 +235,7 @@ function setColumnType (i, type, instance) {
 
   spinner.spin(document.body)
 
-  T.iter(hotData, function(jtem, cb, p) {
+  T.iter(hotData, function (jtem, cb, p) {
     var cell = jtem[i]
     if ((cell === null) || (cell === '')) return cb()
 
@@ -317,7 +318,8 @@ function loadFile (str, file) {
       json = JSON.parse(str)
       workJson(json)
     } catch (e) {
-      swal(JSON.stringify(e))
+      console.log(e)
+      swal(e.toString())
     }
   } else swal('file is not a json, csv, xls, xlsx or those zipped').then(function () {
       location.reload()
@@ -332,17 +334,18 @@ function workJson (json) {
   }
 
   var schema = buildSchema(json)
+  // console.log(schema)
   json = HH.stringifyArrObj(json)
   var arrArr = HH.convArrObjArrArr(json)
 
-  var colNumHeaders = []
+  // console.log(arrArr)
 
-  for (var c = 0; c < schema.colHeaders.length; c++) {
-    colNumHeaders.push(c + 1)
-  }
+  // hot.updateSettings({
+  //   'columns': schema.columns,
+  // })
 
   hot.updateSettings({
-    'colHeaders': colNumHeaders,
+    'colHeaders': schema.colHeaders,
     'data': arrArr
   })
 }
@@ -352,13 +355,11 @@ function buildSchema (arr) {
 
   var o = {
     columns: [],
-    colHeaders: [],
-    idArr: []
+    colHeaders: []
   }
 
   for (var i = 0; i < arr.length; i++) {
     var row = arr[i]
-    o.idArr.push(row._id)
     for (var key in row) {
       var val = row[key]
       var jsType = typeof val

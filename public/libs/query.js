@@ -159,6 +159,7 @@
       }
 
       columns = columns.filter(function(a) {
+        if(a.data === '_id') return a 
         if(positiveProj) {
           if(projection[a.data]) return a
         } else {
