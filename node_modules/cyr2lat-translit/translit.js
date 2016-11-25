@@ -9,6 +9,13 @@
 
 ;(function () {
   var Translit = this.Translit = function (input) {
+
+    if(!input) return
+
+    if(typeof input === 'number') input = input.toString()
+
+    if(typeof input !== 'string') return 
+
     var letterMap = {
       '/': '_',
       '\\': '_',

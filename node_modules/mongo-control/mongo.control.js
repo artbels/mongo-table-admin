@@ -666,7 +666,7 @@ MC.removeById = function (params) {
       }, function (e, r) {
         if (e) return err(e)
 
-        if (Object.keys(r).length || !objId) {
+        if ((r.n === 1) || !objId) {
           res(r)
           db.close()
         } else {

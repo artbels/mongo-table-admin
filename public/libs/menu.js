@@ -30,11 +30,11 @@
     Query.show('json-query')
   }
 
-  func.setQuery = func.setJsonQuery
-
   func.setVisualQuery = function () {
     Query.show('visual-query')
   }
+  
+  func.setQuery = func.setVisualQuery
 
   func.setProjection = function () {
     Query.show('projection')

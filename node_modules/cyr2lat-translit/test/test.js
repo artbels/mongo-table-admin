@@ -19,6 +19,14 @@ var cases = {
         ['-.kashka__малашка-+)', 'kashka_malashka-plus'],
         ['100% малашка+)', '100-malashka-plus'],
       ],
+      'number': [
+        [5, '5'],
+      ],
+      'empty': [
+        [undefined, undefined],
+        ['', undefined],
+        [null, undefined],
+      ],
     }
   }
 };
