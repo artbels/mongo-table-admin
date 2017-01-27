@@ -206,7 +206,7 @@
       spinner.spin(document.body)
 
       setTimeout(function () {
-        var chunkSize = 10
+        var chunkSize = 500
         var chunks = Math.ceil(arr.length / chunkSize)
         var currChunk = 0
 

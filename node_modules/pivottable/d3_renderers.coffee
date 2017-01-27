@@ -6,7 +6,7 @@ callWithJQuery = (pivotModule) ->
     # Plain browser env
     else
         pivotModule jQuery, d3
-        
+
 callWithJQuery ($, d3) ->
 
     $.pivotUtilities.d3_renderers = Treemap: (pivotData, opts) ->
@@ -16,7 +16,7 @@ callWithJQuery ($, d3) ->
                 width: -> $(window).width() / 1.4
                 height: -> $(window).height() / 1.4
 
-        opts = $.extend defaults, opts
+        opts = $.extend(true, {}, defaults, opts)
 
 
         result = $("<div>").css(width: "100%", height: "100%")
@@ -66,8 +66,8 @@ callWithJQuery ($, d3) ->
                         .style("width", (d) -> Math.max(0, d.dx - 1)+"px" )
                         .style("height",(d) -> Math.max(0, d.dy - 1)+"px" )
                     return
-        
+
         return result
-    
+
 
 

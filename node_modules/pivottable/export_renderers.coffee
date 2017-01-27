@@ -6,14 +6,13 @@ callWithJQuery = (pivotModule) ->
     # Plain browser env
     else
         pivotModule jQuery
-        
+
 callWithJQuery ($) ->
 
     $.pivotUtilities.export_renderers = "TSV Export": (pivotData, opts) ->
-        defaults =
-            localeStrings: {}
+        defaults = localeStrings: {}
 
-        opts = $.extend defaults, opts
+        opts = $.extend(true, {}, defaults, opts)
 
         rowKeys = pivotData.getRowKeys()
         rowKeys.push [] if rowKeys.length == 0
@@ -50,8 +49,8 @@ callWithJQuery ($) ->
         text = ""
         for r in result
             text += r.join("\t")+"\n"
-        
+
         return $("<textarea>").text(text).css(
-                width: ($(window).width() / 2) + "px", 
+                width: ($(window).width() / 2) + "px",
                 height: ($(window).height() / 2) + "px")
-    
+

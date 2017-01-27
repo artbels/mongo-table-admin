@@ -279,10 +279,20 @@
 
   T.getTsv = function (arr, delim) {
     delim = delim || '\t'
-    var rowArr = []
 
-    for (var i = 0; i < arr.length; i++) {
-      var obj = arr[i]
+    var rowArr = []
+    var columns = {}
+
+    for (var i = 0; i < arr.length; i++) { //собираем все ключи со всех объектов, а не только с первого
+      for (var key in arr[i]) {
+      columns[key] = true
+      }
+    }
+
+    rowArr.push(Object.keys(columns).join(delim)) //добавляем названия колонок
+
+    for (var j = 0; j < arr.length; j++) {
+      var obj = arr[j]
       var valArr = []
       for (var prop in obj) {
         var val = obj[prop]

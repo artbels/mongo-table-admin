@@ -6,17 +6,15 @@ callWithJQuery = (pivotModule) ->
     # Plain browser env
     else
         pivotModule jQuery, c3
-        
+
 callWithJQuery ($, c3) ->
 
     makeC3Chart = (chartOpts = {}) -> (pivotData, opts) ->
         defaults =
-            localeStrings:
-                vs: "vs"
-                by: "by"
+            localeStrings: {vs: "vs", by: "by"}
             c3: {}
 
-        opts = $.extend true, defaults, opts
+        opts = $.extend(true, {}, defaults, opts)
         opts.c3.size ?= {}
         opts.c3.size.width ?= window.innerWidth / 1.4
         opts.c3.size.height ?= window.innerHeight / 1.4 - 50
@@ -30,7 +28,7 @@ callWithJQuery ($, c3) ->
         headers = (h.join("-") for h in colKeys)
         rotationAngle = 0
 
-        fullAggName = pivotData.aggregatorName 
+        fullAggName = pivotData.aggregatorName
         if pivotData.valAttrs.length
             fullAggName += "(#{pivotData.valAttrs.join(", ")})"
 
@@ -38,7 +36,7 @@ callWithJQuery ($, c3) ->
             scatterData = x:{}, y:{}, t:{}
             attrs = pivotData.rowAttrs.concat(pivotData.colAttrs)
             vAxisTitle = attrs[0] ? ""
-            hAxisTitle = attrs[1] ? "" 
+            hAxisTitle = attrs[1] ? ""
             groupByTitle = attrs.slice(2).join("-")
             titleText = vAxisTitle
             titleText += " #{opts.localeStrings.vs} #{hAxisTitle}" if hAxisTitle != ""
@@ -78,7 +76,7 @@ callWithJQuery ($, c3) ->
                         row.push null
                 columns.push row
 
-            vAxisTitle = pivotData.aggregatorName+ 
+            vAxisTitle = pivotData.aggregatorName+
                 if pivotData.valAttrs.length then "(#{pivotData.valAttrs.join(", ")})" else ""
             hAxisTitle = pivotData.colAttrs.join("-")
 
@@ -86,12 +84,12 @@ callWithJQuery ($, c3) ->
             titleText += " #{opts.localeStrings.vs} #{hAxisTitle}" if hAxisTitle != ""
             groupByTitle = pivotData.rowAttrs.join("-")
             titleText += " #{opts.localeStrings.by} #{groupByTitle}" if groupByTitle != ""
-            
+
         title = $("<p>", {style: "text-align: center; font-weight: bold"})
         title.text(titleText)
 
-        params = 
-            axis: 
+        params =
+            axis:
                 y:
                     label: vAxisTitle
                 x:
@@ -99,11 +97,11 @@ callWithJQuery ($, c3) ->
                     tick:
                         rotate: rotationAngle
                         multiline: false
-            data: 
+            data:
                 type: chartOpts.type
             tooltip:
                 grouped: false
-            color: 
+            color:
                 pattern: [ "#3366cc", "#dc3912", "#ff9900", "#109618",
                            "#990099", "#0099c6", "#dd4477", "#66aa00",
                            "#b82e2e", "#316395", "#994499", "#22aa99",
@@ -111,7 +109,7 @@ callWithJQuery ($, c3) ->
                            "#651067", "#329262", "#5574a6", "#3b3eac" ]
 
 
-        $.extend true, params, opts.c3
+        params = $.extend(true, {}, params, opts.c3)
 
         if chartOpts.type == "scatter"
             xs = {}
@@ -126,8 +124,8 @@ callWithJQuery ($, c3) ->
             params.data.columns = dataColumns
             params.axis.x.tick = fit: false
             if numSeries == 1
-                params.legend = show: false 
-            params.tooltip.format =  
+                params.legend = show: false
+            params.tooltip.format =
                 title: -> fullAggName
                 name: -> ""
                 value: (a,b,c,d) -> scatterData.t[c][d]
@@ -147,7 +145,7 @@ callWithJQuery ($, c3) ->
         renderArea.remove()
         return $("<div>").append title, result
 
-    $.pivotUtilities.c3_renderers = 
+    $.pivotUtilities.c3_renderers =
         "Line Chart": makeC3Chart()
         "Bar Chart": makeC3Chart(type: "bar")
         "Stacked Bar Chart": makeC3Chart(type: "bar", stacked: true)

@@ -1,6 +1,20 @@
 ;(function () {
   var Router = this.Router = {}
 
+  document.addEventListener('DOMContentLoaded', function () {
+    UI.appendModal({
+      title: 'Select database',
+      id: 'select-database'
+    })
+
+    UI.appendModal({
+      title: 'Select collection',
+      id: 'select-collection'
+    })
+    document.querySelector('#select-database-body').align = 'center'
+    document.querySelector('#select-collection-body').align = 'center'
+  })
+
   Router.getDb = function () {
     var connections = JSON.parse(localStorage.connections || '[{"str":"mongodb://localhost:27017/test", "title":"localhost"}]')
     var rePattern = /^\/(?:(.+?)(?:\/))?(?:(.+?)(?:\/))?(?:(.+?)(?:\/))?(?:(.+?)(?:\/))?$/
@@ -154,22 +168,15 @@
         if (i < l) {
           next()
         } else {
-          swal({
-            title: 'Choose collection',
-            html: "<div id='swal-div' align='center'></div>",
-            showConfirmButton: false,
-            width: 700,
-            onOpen: function () {
-              var swalDivNode = document.querySelector('#swal-div')
+          UI.table(collArr, {
+            parent: document.querySelector('#select-collection-body'),
+            hideHead: true
+          })
 
-              UI.table(collArr, {
-                parent: swalDivNode,
-                hideHead: true
-              })
-            }
-          }).catch(function () {})
-          spinner.stop()
+          $('#select-collection').modal()
         }
+
+        spinner.stop()
       })
     })()
   }
@@ -177,54 +184,47 @@
   Router.chooseDb = function (list) {
     var o = Router.getDb()
 
-    swal({
-      title: 'Choose Database',
-      html: "<div id='swal-div' align='center'></div>",
-      showConfirmButton: false,
-      allowOutsideClick: o.view ? true : false,
-      allowEscapeKey: o.view ? true : false,
-      onOpen: function () {
-        var swalDivNode = document.querySelector('#swal-div')
+    var modalBody = document.querySelector('#select-database-body')
 
-        var i = 0
-        var l = list.databases.length
+    var i = 0
+    var l = list.databases.length
 
-        ;(function next () {
-          var dbName = list.databases[i].name
-          var size = list.databases[i].sizeOnDisk / 1024 / 1024
-          var sizeStr
+    ;(function next () {
+      var dbName = list.databases[i].name
+      var size = list.databases[i].sizeOnDisk / 1024 / 1024
+      var sizeStr
 
-          if (size > 100) sizeStr = (size / 1024).toFixed(2) + 'GB'
-          else sizeStr = (size).toFixed(2) + 'MB'
+      if (size > 100) sizeStr = (size / 1024).toFixed(2) + 'GB'
+      else sizeStr = (size).toFixed(2) + 'MB'
 
-          UI.button({
-            parent: swalDivNode,
-            innerHTML: dbName + ', ' + sizeStr,
-            id: dbName,
-            style: {
-              marginRight: '10px'
-            }
-          }, function (r) {
-            location.pathname = '/' + o.title + '/' + r + '/'
-          })
+      UI.button({
+        parent: modalBody,
+        innerHTML: dbName + ', ' + sizeStr,
+        id: dbName,
+        style: {
+          marginRight: '10px'
+        }
+      }, function (r) {
+        location.pathname = '/' + o.title + '/' + r + '/'
+      })
 
-          i++
+      i++
 
-          if (i < l) next()
-        })()
+      if (i < l) next()
+    })()
 
-        UI.br(swalDivNode)
+    UI.br(modalBody)
 
-        UI.button({
-          parent: swalDivNode,
-          id: 'change-db-path',
-          className: 'btn btn-primary',
-          innerHTML: 'Change DB Path'
-        }, function () {
-          Router.enterDbPath()
-        })
-      }
-    }).catch(function () {})
+    UI.button({
+      parent: modalBody,
+      id: 'change-db-path',
+      className: 'btn btn-primary',
+      innerHTML: 'Change DB Path'
+    }, function () {
+      Router.enterDbPath()
+    })
+
+    $('#select-database').modal()
   }
 
   Router.changeView = function (newView) {
@@ -258,7 +258,7 @@
   }
 
   Router.dropCollection = function (params) {
-    if (typeof params == 'string') {
+    if (typeof params === 'string') {
       var o = Router.getDb()
       params = {
         db: o.connStr + '/' + o.urlDbName,
