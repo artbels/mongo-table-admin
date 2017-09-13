@@ -63,10 +63,8 @@ alt="add rows" width="480" height="270" border="10" /></a>
 ### plans
 - [*] multiple times faster saving and deleting using concurrent requests and grouping
 - [*] use Visual QueryBuilder to build queries
-- [*] switch to Handsontable BeforeRemoveRow and BeforeChange events
 - [*] use ace editor for json edit
 - [*] set projection and limit for query
-- [*] manage projection as a table, not a JSON  
 - [*] add/delete multiple fields at once
 - [*] refactor schema management  
 - [ ] select whether to run function for the whole collection or based on query  
@@ -80,4 +78,3 @@ alt="add rows" width="480" height="270" border="10" /></a>
 
 * be free to fork [github.com/artbels/mongo-table-admin](https://github.com/artbels/mongo-table-admin). Ex. add custom auth.
 * found something broken? Take a minute to [post an issue](https://github.com/artbels/mongo-table-admin/issues) or request pull.
-* **don't be shy to star my first open source experiment - I promise to smile every time I see it ))**

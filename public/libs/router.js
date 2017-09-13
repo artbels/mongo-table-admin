@@ -168,6 +168,12 @@
         if (i < l) {
           next()
         } else {
+
+          collArr.sort(function(a, b) {
+            if(a.collection < b.collection) return -1
+            return 1
+          })
+
           UI.table(collArr, {
             parent: document.querySelector('#select-collection-body'),
             hideHead: true
