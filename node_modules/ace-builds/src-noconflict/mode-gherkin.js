@@ -103,7 +103,7 @@ var GherkinHighlightRules = function() {
         }]
     };
     this.normalizeRules();
-}
+};
 
 oop.inherits(GherkinHighlightRules, TextHighlightRules);
 
@@ -118,6 +118,7 @@ var GherkinHighlightRules = require("./gherkin_highlight_rules").GherkinHighligh
 
 var Mode = function() {
     this.HighlightRules = GherkinHighlightRules;
+    this.$behaviour = this.$defaultBehaviour;
 };
 oop.inherits(Mode, TextMode);
 
@@ -132,7 +133,7 @@ oop.inherits(Mode, TextMode);
         var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
         var tokens = tokenizedLine.tokens;
         
-        console.log(state)
+        console.log(state);
         
         if(line.match("[ ]*\\|")) {
             indent += "| ";

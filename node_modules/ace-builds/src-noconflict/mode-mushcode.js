@@ -587,7 +587,7 @@ oop.inherits(FoldMode, BaseFoldMode);
                 return this.indentationBlock(session, row, match.index + match[2].length);
             return this.indentationBlock(session, row);
         }
-    }
+    };
 
 }).call(FoldMode.prototype);
 
@@ -605,6 +605,7 @@ var Range = require("../range").Range;
 var Mode = function() {
     this.HighlightRules = MushCodeRules;
     this.foldingRules = new PythonFoldMode("\\:");
+    this.$behaviour = this.$defaultBehaviour;
 };
 oop.inherits(Mode, TextMode);
 

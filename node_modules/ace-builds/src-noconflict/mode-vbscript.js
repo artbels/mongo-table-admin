@@ -166,7 +166,7 @@ var VBScriptHighlightRules = function() {
             defaultToken: "string.quoted.double.asp"
         }
     ]
-}
+};
 
 };
 
@@ -184,6 +184,7 @@ var VBScriptHighlightRules = require("./vbscript_highlight_rules").VBScriptHighl
 
 var Mode = function() {
     this.HighlightRules = VBScriptHighlightRules;
+    this.$behaviour = this.$defaultBehaviour;
 };
 oop.inherits(Mode, TextMode);
 

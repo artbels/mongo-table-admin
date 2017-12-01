@@ -25,7 +25,7 @@ DocCommentHighlightRules.getTagRule = function(start) {
         token : "comment.doc.tag.storage.type",
         regex : "\\b(?:TODO|FIXME|XXX|HACK)\\b"
     };
-}
+};
 
 DocCommentHighlightRules.getStartRule = function(start) {
     return {
@@ -152,11 +152,10 @@ var JavaHighlightRules = function() {
         "comment" : [
             {
                 token : "comment", // closing comment
-                regex : ".*?\\*\\/",
+                regex : "\\*\\/",
                 next : "start"
             }, {
-                token : "comment", // comment spanning whole line
-                regex : ".+"
+                defaultToken : "comment"
             }
         ]
     };
@@ -267,14 +266,13 @@ var DroolsHighlightRules = function() {
         return [
             {
                 token : "comment.block", // closing comment
-                regex : ".*?\\*\\/",
+                regex : "\\*\\/",
                 next : returnRule
             }, {
-                token : "comment.block", // comment spanning whole line
-                regex : ".+"
+                defaultToken : "comment.block"
             }
         ];
-      }
+      };
 
       var basicPostRules = function() {
         return [{
@@ -427,24 +425,24 @@ oop.inherits(FoldMode, BaseFoldMode);
             }
 
         }
-    }
+    };
 
 }).call(FoldMode.prototype);
 
 });
 
-ace.define("ace/mode/drools",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/drools_highlight_rules","ace/range","ace/mode/folding/drools"], function(require, exports, module) {
+ace.define("ace/mode/drools",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/drools_highlight_rules","ace/mode/folding/drools"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
 var TextMode = require("./text").Mode;
 var DroolsHighlightRules = require("./drools_highlight_rules").DroolsHighlightRules;
-var Range = require("../range").Range;
 var DroolsFoldMode = require("./folding/drools").FoldMode;
 
 var Mode = function() {
     this.HighlightRules = DroolsHighlightRules;
     this.foldingRules = new DroolsFoldMode();
+    this.$behaviour = this.$defaultBehaviour;
 
 };
 oop.inherits(Mode, TextMode);

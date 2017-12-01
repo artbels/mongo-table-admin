@@ -83,7 +83,7 @@ var CirruHighlightRules = function() {
             regex: /"/,
             next: 'string'
         }]
-    }
+    };
 
 };
 
@@ -190,6 +190,7 @@ var CoffeeFoldMode = require("./folding/coffee").FoldMode;
 var Mode = function() {
     this.HighlightRules = CirruHighlightRules;
     this.foldingRules = new CoffeeFoldMode();
+    this.$behaviour = this.$defaultBehaviour;
 };
 oop.inherits(Mode, TextMode);
 
