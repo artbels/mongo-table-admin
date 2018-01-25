@@ -467,7 +467,7 @@
         var fileToRead = files[index]
         var fileType = fileToRead.name.split(/\./).pop()
 
-        if (parent.bypassFileReader) return cb(fileToRead)
+        if (params.bypassFileReader) return cb(fileToRead)
 
         fileReader.onload = function (e) {
           var contents = e.target.result
